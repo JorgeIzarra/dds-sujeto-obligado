@@ -1,7 +1,7 @@
 # Sesión 01 — Infraestructura y arnés de medición
 
 **Fecha:** 2026-06-04
-**Participantes:** Julio C. Gudiño K., Amir Reyes, Héctor Ortega
+**Participantes:** Jorge Izarra, Isabella Linares, Samuel Gonzales, Michael Portela
 **Duración:** (registrar horas-persona al cerrar la sesión)
 
 ---
