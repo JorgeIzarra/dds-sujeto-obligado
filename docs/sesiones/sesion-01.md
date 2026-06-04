@@ -28,7 +28,7 @@ proyecto analizado (aunque vacío de código de negocio).
 | docker-compose (app + postgres:16-alpine) | `docker-compose.yml` | `healthcheck` en postgres; `depends_on: condition: service_healthy` |
 | Variables de entorno | `.env.example` | `.env` real en `.gitignore`; `ENCRYPTION_KEY` comentada para Sesión 2 |
 | Vitest + lcov | `vitest.config.ts` | provider `v8`; reporters `text`, `lcov`, `html`; sin thresholds todavía |
-| ESLint + Prettier | `.eslintrc.json`, `.prettierrc` | ESLint 8 + typescript-eslint v7; override `jest:true` para tests |
+| ESLint + Prettier | `.eslintrc.json`, `.prettierrc` | ESLint 8 + typescript-eslint v8; override `jest:true` para tests |
 | SonarCloud | `sonar-project.properties` | `org=jorgeizarra`, `key=JorgeIzarra_dds-sujeto-obligado`. Token en GitHub Secret `SONAR_TOKEN` |
 | GitHub Actions CI | `.github/workflows/ci.yml` | Jobs: `lint` → `test` (con postgres service) → `sonar` |
 | Test de arnés | `tests/unit/health.test.ts` | 1 test; valida que el pipeline completo corre verde |
@@ -58,7 +58,7 @@ proyecto analizado (aunque vacío de código de negocio).
 | **PostgreSQL en CI desde Sesión 1** | Añadirlo en Sesión 2 | Sesión 2 introduce pruebas de integración con BD; tenerlo listo evita reconfigurar el pipeline |
 | **`npx prisma generate \|\| true` en CI** | Fallar el step | Sin modelos en Sesión 1, `prisma generate` sale con error. El `\|\| true` lo ignora solo hasta Sesión 2; quitar en el commit que añada los modelos |
 | **Vitest 4.x en lugar de 2.x** | Mantener 2.x | `vitest@2.x` arrastraba `esbuild ≤0.24.2` (2 vulnerabilidades críticas). Actualizar a 4.x las resuelve sin cambios en la API de tests |
-| **`continue-on-error: true` en job Sonar** | Fallar el pipeline si Sonar no está listo | El SONAR_TOKEN es configuración manual pendiente; no debe bloquear el CI mientras no esté lista |
+| **SonarCloud configurado en la misma sesión** | Dejar `continue-on-error: true` permanente | Las credenciales (org, project key, token) se configuraron durante la sesión; `continue-on-error` se quitó para que el job falle si Sonar tiene problema real |
 
 ---
 
@@ -95,7 +95,7 @@ proyecto analizado (aunque vacío de código de negocio).
 
 | ID | Descripción | Severidad | Estado | Acción |
 |----|-------------|-----------|--------|--------|
-| — | Sin defectos en esta sesión (infraestructura solamente) | — | — | — |
+| DEF-S1-01 | `@typescript-eslint/parser@v7` no soporta TypeScript 5.9.3 (`SUPPORTED: >=4.7.4 <5.6.0`); warning en cada ejecución de lint | Baja | ✅ Resuelto | Actualizar a `@typescript-eslint@^8.0.0` (instalada v8.60.1), que cubre TypeScript 5.6+. Sin cambios en `.eslintrc.json`. Commit `9cfcbb1` |
 
 ---
 
@@ -109,11 +109,10 @@ proyecto analizado (aunque vacío de código de negocio).
 
 ## 9. Commits de la sesión
 
-```
-chore(infra): inicializar proyecto Node+TS+Express (Sesión 1)
-```
-
-> Registrar el hash completo aquí una vez realizado el commit.
+| Hash | Mensaje | Archivos |
+|------|---------|---------|
+| `e9d3418` | `chore(infra): inicializar proyecto Node+TS+Express (Sesión 1)` | 30 archivos; estructura completa, CI, Docker, test de arnés |
+| `9cfcbb1` | `chore(infra): actualizar @typescript-eslint a v8 (compatibilidad TS 5.9)` | `package.json`, `package-lock.json` — resuelve DEF-S1-01 |
 
 ---
 
@@ -134,9 +133,10 @@ chore(infra): inicializar proyecto Node+TS+Express (Sesión 1)
 ### Riesgos identificados
 | Riesgo | Probabilidad | Mitigación |
 |--------|-------------|------------|
-| `package-lock.json` no commiteado → CI rojo | Alta si se omite | Ejecutar `npm install` localmente ANTES del primer push y commitear el lock file |
-| SonarCloud "Automatic Analysis" activo → conflicto con CI | Media | Documentado en `sonar-project.properties` y en §11; `continue-on-error: true` lo mascara sin bloquear |
-| Vistas EJS — path `/views` vs `/dist/views` en producción Docker | Baja (sin vistas todavía) | `app.set('views', path.join(process.cwd(), 'src/interfaces/views'))` + COPY en Dockerfile a añadir en Sesión 3 |
+| `package-lock.json` no commiteado → CI rojo | ✅ Resuelto | `npm install` ejecutado y lock file commiteado en `e9d3418` |
+| SonarCloud "Automatic Analysis" activo → conflicto con CI | ✅ Resuelto | Credenciales configuradas y `continue-on-error` quitado; deshabilitar Automatic Analysis en SonarCloud antes del primer análisis |
+| Vistas EJS — path `/views` vs `/dist/views` en producción Docker | Abierto (sin vistas todavía) | `app.set('views', path.join(process.cwd(), 'src/interfaces/views'))` + COPY en Dockerfile a añadir en Sesión 3 |
+| `npx prisma generate` falla sin modelos en CI | ✅ Resuelto | `\|\| true` en el step de CI hasta Sesión 2; quitar en el commit que añada los modelos |
 
 ---
 
@@ -158,7 +158,7 @@ chore(infra): inicializar proyecto Node+TS+Express (Sesión 1)
 | Vitest | **4.1.8** ¹ | `npm list vitest` |
 | @vitest/coverage-v8 | **4.1.8** (igual que vitest) | `npm list @vitest/coverage-v8` |
 | ESLint | **8.57.1** | `npx eslint --version` |
-| @typescript-eslint parser/plugin | `^7.18.0` | `npm list @typescript-eslint/parser` |
+| @typescript-eslint parser/plugin | **8.60.1** ² | `npm list @typescript-eslint/parser` |
 | Prettier | **3.8.3** | `npx prettier --version` |
 | Supertest | **7.2.2** | `npm list supertest` |
 | ts-node | **10.9.2** | `npm list ts-node` |
@@ -171,6 +171,9 @@ chore(infra): inicializar proyecto Node+TS+Express (Sesión 1)
 > arrastradas transitivamente por vitest 2.x → vite → esbuild. Vitest 4.x
 > incluye esbuild 0.25.x que resuelve la vulnerabilidad. Sin breaking changes
 > en la API utilizada (`globals`, `coverage v8`, `describe/it/expect`).
+
+> ² Se especificó `^7.18.0` en el plan inicial; se actualizó a `^8.0.0` (instalada 8.60.1)
+> durante la sesión para corregir DEF-S1-01 (incompatibilidad con TypeScript 5.9.3).
 
 > Las versiones exactas instaladas quedan fijadas en `package-lock.json`
 > (generado con `npm install` en el primer setup local y commiteado).
