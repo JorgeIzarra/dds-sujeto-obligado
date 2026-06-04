@@ -1,0 +1,12 @@
+// Sesión 1: datasource y generator únicamente.
+// Los modelos (FormularioDDS, Cliente, DatosContacto, PerfilEconomico,
+// Documento, Oficial, LogAuditoria) se definen en la Sesión 2 (SPEC-DATA-01..03).
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}

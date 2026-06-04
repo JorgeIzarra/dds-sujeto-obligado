@@ -1,0 +1,52 @@
+# ── Dependencias ─────────────────────────────────────────────────────────────
+node_modules/
+
+# ── Variables de entorno (NUNCA versionar el .env real) ───────────────────────
+.env
+.env.local
+.env.*.local
+# El .env.example SÍ se versiona
+
+# ── Build compilado ───────────────────────────────────────────────────────────
+dist/
+build/
+
+# ── Cobertura de tests ────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Prisma ────────────────────────────────────────────────────────────────────
+prisma/*.db
+prisma/*.db-journal
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── SonarQube scanner ─────────────────────────────────────────────────────────
+.sonar/
+.scannerwork/
