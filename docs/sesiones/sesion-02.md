@@ -162,12 +162,12 @@ _(se completa después del commit de cierre)_
 
 | Hash | Mensaje | Archivos principales |
 |------|---------|---------------------|
-| pendiente | `feat(data): modelos Prisma, migración y seq_folio_dds (SPEC-DATA-01..03)` | `prisma/schema.prisma`, `prisma/migrations/...` |
-| pendiente | `security(cifrado): AES-256-GCM en reposo para campos PII (SPEC-SEC-01)` | `src/security/crypto.service.ts`, `src/infrastructure/repositories/cliente.repository.ts` |
-| pendiente | `test(s02): tests de persistencia y cifrado (SPEC-DATA-01..03, SPEC-SEC-01)` | `tests/integration/`, `tests/unit/cifrado.test.ts` |
-| pendiente | `chore(ci): quitar \|\|true, añadir migrate deploy y ENCRYPTION_KEY (Sesión 2)` | `.github/workflows/ci.yml`, `vitest.config.ts`, `tests/setup.ts` |
-| pendiente | `fix(dev): puerto 5433 para postgres local (DEF-S2-01)` | `docker-compose.yml`, `.env.example` |
-| pendiente | `docs(sesion-02): cierre con métricas reales de Sesión 2` | `docs/sesiones/sesion-02.md` |
+| `4a71545` | `feat(data): modelos Prisma, migración SQL y seq_folio_dds (SPEC-DATA-01..03)` | `prisma/schema.prisma`, `prisma/migrations/20260608000000_.../migration.sql` |
+| `ad281cd` | `security(cifrado): AES-256-GCM en reposo para campos PII (SPEC-SEC-01)` | `src/security/crypto.service.ts`, `src/infrastructure/repositories/cliente.repository.ts` |
+| `634a703` | `test(s02): persistencia de entidades y cifrado en BD (SPEC-DATA-01..03, SPEC-SEC-01)` | `tests/integration/`, `tests/unit/cifrado.test.ts`, `tests/setup.ts`, `vitest.config.ts` |
+| `a426599` | `chore(ci): migrate deploy, ENCRYPTION_KEY y quitar \|\|true (Sesión 2)` | `.github/workflows/ci.yml`, `.env.example` |
+| `45d0eec` | `fix(dev): puerto 5433 para postgres local (DEF-S2-01)` | `docker-compose.yml` |
+| `3c2e354` | `docs(sesion-02): cierre con métricas reales, VOL y DEF (Sesión 2)` | `docs/sesiones/sesion-02.md` |
 
 ---
 
