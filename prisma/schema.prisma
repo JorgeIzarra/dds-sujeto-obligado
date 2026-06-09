@@ -1,6 +1,8 @@
-// Sesión 1: datasource y generator únicamente.
-// Los modelos (FormularioDDS, Cliente, DatosContacto, PerfilEconomico,
-// Documento, Oficial, LogAuditoria) se definen en la Sesión 2 (SPEC-DATA-01..03).
+// Sesión 2: SPEC-DATA-01..03 — modelos de datos
+// Divergencias de spec documentadas en docs/sesiones/sesion-02.md §4:
+//   VOL-S2-01: nombre y numDocumento son Text (no VARCHAR(200)) — ciphertext AES-256-GCM > 200 chars
+//   VOL-S2-02: idx_cliente_nombre sobre campo cifrado con IV aleatorio; búsqueda diferida a Sesión 7
+//   VOL-S2-03: folio es nullable (String?) — conflicto SPEC-DATA-01 (NOT NULL) vs SPEC-API-02 (folio: null en borrador)
 
 datasource db {
   provider = "postgresql"
@@ -9,4 +11,117 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+}
+
+// SPEC-DATA-03 — debe declararse antes de FormularioDDS por la FK
+model Oficial {
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre       String          @db.VarChar(120)
+  cargo        String          @db.VarChar(20)
+  email        String          @unique @db.VarChar(120)
+  hashPassword String          @map("hash_password") @db.VarChar(255)
+  formularios  FormularioDDS[]
+  logs         LogAuditoria[]
+
+  @@map("oficial")
+}
+
+// SPEC-DATA-01 — tabla principal; UNIQUE en folio; seq_folio_dds añadida en migración SQL
+model FormularioDDS {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  folio               String?           @unique @db.VarChar(20) // nullable: asignado al guardar (VOL-S2-03)
+  fecha               DateTime          @default(dbgenerated("CURRENT_DATE")) @db.Date
+  proposito           String
+  clasificacionRiesgo String?           @map("clasificacion_riesgo") @db.VarChar(20)
+  estado              String            @default("BORRADOR") @db.VarChar(20)
+  fechaCierre         DateTime?         @map("fecha_cierre") @db.Date
+  fechaExpiracion     DateTime?         @map("fecha_expiracion") @db.Date
+  oficialId           String            @map("oficial_id") @db.Uuid
+  creadoEn            DateTime          @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn       DateTime          @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  oficial             Oficial           @relation(fields: [oficialId], references: [id])
+  clientes            Cliente[]
+  datosContacto       DatosContacto[]
+  perfilesEconomicos  PerfilEconomico[]
+  documentos          Documento[]
+
+  @@map("formulario_dds")
+}
+
+// SPEC-DATA-02 — campos PII cifrados AES-256-GCM (SPEC-SEC-01)
+// VOL-S2-01: nombre y numDocumento usan Text (no VARCHAR(200)); ciphertext = IV(12) + tag(16) + datos en base64
+// VOL-S2-02: idx_cliente_nombre existe por contrato pero no sirve para búsqueda LIKE sobre ciphertext
+model Cliente {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formularioId    String        @map("formulario_id") @db.Uuid
+  nombre          String        // Text — VOL-S2-01
+  tipoDocumento   String        @map("tipo_documento") @db.VarChar(40)
+  numDocumento    String        @map("num_documento") // Text — VOL-S2-01
+  fechaNacimiento DateTime?     @map("fecha_nacimiento") @db.Date
+  nacionalidad    String        @db.VarChar(60)
+  tipoCliente     String        @map("tipo_cliente") @db.VarChar(20)
+  esPep           Boolean       @default(false) @map("es_pep")
+
+  formulario      FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@index([nombre], name: "idx_cliente_nombre") // VOL-S2-02
+  @@map("cliente")
+}
+
+// SPEC-DATA-03 — datos de contacto
+model DatosContacto {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formularioId String        @map("formulario_id") @db.Uuid
+  direccion    String
+  telefono     String        @db.VarChar(40)
+  correo       String        @db.VarChar(120)
+  fechaVerif   DateTime?     @map("fecha_verif") @db.Timestamptz
+
+  formulario   FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("datos_contacto")
+}
+
+// SPEC-DATA-03 — perfil económico
+model PerfilEconomico {
+  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formularioId         String        @map("formulario_id") @db.Uuid
+  actividad            String        @db.VarChar(120)
+  fuenteIngresos       String        @map("fuente_ingresos") @db.VarChar(120)
+  ingresoMensual       Decimal       @map("ingreso_mensual") @db.Decimal(12, 2)
+  volumenTransacciones Decimal       @map("volumen_transacciones") @db.Decimal(12, 2)
+
+  formulario           FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("perfil_economico")
+}
+
+// SPEC-DATA-03 — documentos
+model Documento {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formularioId   String        @map("formulario_id") @db.Uuid
+  tipo           String        @db.VarChar(80)
+  fechaRecepcion DateTime      @default(now()) @map("fecha_recepcion") @db.Timestamptz
+  verificado     Boolean       @default(false)
+  baseLegal      String?       @map("base_legal") @db.VarChar(80)
+
+  formulario     FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("documento")
+}
+
+// SPEC-DATA-03 — log de auditoría (RNF-05, Art. 55)
+model LogAuditoria {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  timestamp DateTime  @default(now()) @db.Timestamptz
+  usuarioId String?   @map("usuario_id") @db.Uuid
+  accion    String    @db.VarChar(40)
+  entidad   String    @db.VarChar(40)
+  entidadId String?   @map("entidad_id") @db.Uuid
+  detalle   Json?     @db.JsonB
+
+  usuario   Oficial?  @relation(fields: [usuarioId], references: [id])
+
+  @@map("log_auditoria")
 }

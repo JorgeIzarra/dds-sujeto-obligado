@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dds_dev_password}
       POSTGRES_DB: ${POSTGRES_DB:-dds_db}
     ports:
-      - "5432:5432"
+      - "5433:5432" # 5433 en el host para evitar conflicto con PostgreSQL 17 nativo
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
