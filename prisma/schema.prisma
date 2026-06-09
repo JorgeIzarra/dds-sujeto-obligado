@@ -1,12 +1,113 @@
-// Sesión 1: datasource y generator únicamente.
-// Los modelos (FormularioDDS, Cliente, DatosContacto, PerfilEconomico,
-// Documento, Oficial, LogAuditoria) se definen en la Sesión 2 (SPEC-DATA-01..03).
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model FormularioDDS {
+  id                  String    @id @default(uuid())
+  folio               String?   @unique
+  fecha               DateTime  @default(now())
+  proposito           String
+  clasificacionRiesgo String?   @map("clasificacion_riesgo")
+  estado              String    @default("BORRADOR")
+  fechaCierre         DateTime? @map("fecha_cierre")
+  fechaExpiracion     DateTime? @map("fecha_expiracion")
+  oficialId           String    @map("oficial_id")
+  creadoEn            DateTime  @default(now()) @map("creado_en")
+  actualizadoEn       DateTime  @updatedAt @map("actualizado_en")
+
+  oficial        Oficial           @relation(fields: [oficialId], references: [id])
+  cliente        Cliente?
+  datosContacto  DatosContacto?
+  perfilEconomico PerfilEconomico?
+  documentos     Documento[]
+
+  @@map("formulario_dds")
+}
+
+model Cliente {
+  id              String   @id @default(uuid())
+  formularioId    String   @unique @map("formulario_id")
+  nombre          String
+  tipoDocumento   String   @map("tipo_documento")
+  numDocumento    String   @map("num_documento")
+  fechaNacimiento DateTime? @map("fecha_nacimiento")
+  nacionalidad    String
+  tipoCliente     String   @map("tipo_cliente")
+  esPEP           Boolean  @default(false) @map("es_pep")
+
+  formulario FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@index([nombre])
+  @@map("cliente")
+}
+
+model DatosContacto {
+  id           String    @id @default(uuid())
+  formularioId String    @unique @map("formulario_id")
+  direccion    String
+  telefono     String
+  correo       String
+  fechaVerif   DateTime? @map("fecha_verif")
+
+  formulario FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("datos_contacto")
+}
+
+model PerfilEconomico {
+  id                   String  @id @default(uuid())
+  formularioId         String  @unique @map("formulario_id")
+  actividad            String
+  fuenteIngresos       String  @map("fuente_ingresos")
+  ingresoMensual       Float   @map("ingreso_mensual")
+  volumenTransacciones Float   @map("volumen_transacciones")
+
+  formulario FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("perfil_economico")
+}
+
+model Documento {
+  id             String   @id @default(uuid())
+  formularioId   String   @map("formulario_id")
+  tipo           String
+  fechaRecepcion DateTime @default(now()) @map("fecha_recepcion")
+  verificado     Boolean  @default(false)
+  baseLegal      String?  @map("base_legal")
+
+  formulario FormularioDDS @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+
+  @@map("documento")
+}
+
+model Oficial {
+  id           String   @id @default(uuid())
+  nombre       String
+  cargo        String
+  email        String   @unique
+  hashPassword String   @map("hash_password")
+
+  formularios FormularioDDS[]
+  auditorias  LogAuditoria[]
+
+  @@map("oficial")
+}
+
+model LogAuditoria {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  usuarioId String?  @map("usuario_id")
+  accion    String
+  entidad   String
+  entidadId String?  @map("entidad_id")
+  detalle   Json?
+
+  usuario Oficial? @relation(fields: [usuarioId], references: [id])
+
+  @@map("log_auditoria")
 }
