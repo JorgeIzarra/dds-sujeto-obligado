@@ -1,24 +1,17 @@
-import { PrismaClient } from '@prisma/client';
 import { beforeAll, afterAll, afterEach } from 'vitest';
+import { getPrismaClient } from '../../../src/infrastructure/persistence/prisma-client';
 
-let prisma: PrismaClient;
+const prisma = getPrismaClient();
 
-export async function setupTestDB(): Promise<PrismaClient> {
-  if (!prisma) {
-    prisma = new PrismaClient();
-    await prisma.$connect();
-  }
-  return prisma;
+export async function setupTestDB(): Promise<void> {
+  await prisma.$connect();
 }
 
 export async function teardownTestDB(): Promise<void> {
-  if (prisma) {
-    await prisma.$disconnect();
-  }
+  await prisma.$disconnect();
 }
 
 export async function cleanTestDB(): Promise<void> {
-  if (!prisma) return;
   await prisma.logAuditoria.deleteMany();
   await prisma.documento.deleteMany();
   await prisma.perfilEconomico.deleteMany();

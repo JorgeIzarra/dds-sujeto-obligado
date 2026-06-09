@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { ClienteRepository } from '../../../src/infrastructure/persistence/repositories/ClienteRepository';
 import { FormularioRepository } from '../../../src/infrastructure/persistence/repositories/FormularioRepository';
 import { OficialRepository } from '../../../src/infrastructure/persistence/repositories/OficialRepository';
-import { setupTestDB, cleanTestDB } from './setup';
+import { prisma, cleanTestDB } from './setup';
 
 const clienteRepo = new ClienteRepository();
 const formularioRepo = new FormularioRepository();
@@ -46,7 +46,6 @@ describe('ClienteRepository — cifrado en BD', () => {
   });
 
   it('NO debe exponer PII en consulta directa a BD (SPEC-SEC-01)', async () => {
-    const prisma = await setupTestDB();
     const raw = await prisma.$queryRaw<Array<{ nombre: string; num_documento: string }>>`SELECT nombre, num_documento FROM cliente LIMIT 1`;
 
     expect(raw.length).toBeGreaterThan(0);
