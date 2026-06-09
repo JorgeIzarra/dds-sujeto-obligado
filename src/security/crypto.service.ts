@@ -2,7 +2,7 @@
 // Formato almacenado: IV(12 bytes) + authTag(16 bytes) + ciphertext → base64
 // La clave se lee de ENCRYPTION_KEY (base64, 32 bytes) en cada llamada para
 // permitir rotación sin reiniciar el proceso.
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_BYTES = 12;
