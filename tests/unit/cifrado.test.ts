@@ -38,4 +38,12 @@ describe('SPEC-SEC-01 — encrypt / decrypt (AES-256-GCM)', () => {
     expect(() => encrypt('test')).toThrow('ENCRYPTION_KEY no configurada');
     process.env.ENCRYPTION_KEY = original;
   });
+
+  it('lanza error si ENCRYPTION_KEY decodifica a longitud distinta de 32 bytes (línea 16)', () => {
+    const original = process.env.ENCRYPTION_KEY;
+    // 16 bytes en base64 = clave AES-128, no AES-256
+    process.env.ENCRYPTION_KEY = Buffer.alloc(16).toString('base64');
+    expect(() => encrypt('test')).toThrow('ENCRYPTION_KEY debe decodificar exactamente 32 bytes');
+    process.env.ENCRYPTION_KEY = original;
+  });
 });
