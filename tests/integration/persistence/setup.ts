@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, afterEach } from 'vitest';
+import { beforeAll, afterAll, beforeEach } from 'vitest';
 import { getPrismaClient } from '../../../src/infrastructure/persistence/prisma-client';
 
 const prisma = getPrismaClient();
@@ -25,7 +25,7 @@ beforeAll(async () => {
   await setupTestDB();
 });
 
-afterEach(async () => {
+beforeEach(async () => {
   await cleanTestDB();
 });
 

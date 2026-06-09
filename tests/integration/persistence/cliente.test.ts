@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ClienteRepository } from '../../../src/infrastructure/persistence/repositories/ClienteRepository';
 import { FormularioRepository } from '../../../src/infrastructure/persistence/repositories/FormularioRepository';
 import { OficialRepository } from '../../../src/infrastructure/persistence/repositories/OficialRepository';
-import { prisma, cleanTestDB } from './setup';
+import { prisma } from './setup';
 
 const clienteRepo = new ClienteRepository();
 const formularioRepo = new FormularioRepository();
@@ -11,9 +11,7 @@ const oficialRepo = new OficialRepository();
 describe('ClienteRepository — cifrado en BD', () => {
   let formularioId: string;
 
-  beforeAll(async () => {
-    await cleanTestDB();
-
+  beforeEach(async () => {
     const oficial = await oficialRepo.create({
       nombre: 'Oficial Test',
       cargo: 'OFICIAL',
