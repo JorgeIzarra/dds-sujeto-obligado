@@ -23,9 +23,10 @@ migración de PostgreSQL, implementar el cifrado en reposo AES-256-GCM para camp
 | Migración aplicada a BD Docker | BD `dds_db` en `postgres:16-alpine` | 7 tablas + `_prisma_migrations` + secuencia confirmadas vía `\dt` y `information_schema.sequences` |
 | CryptoService (SPEC-SEC-01) | `src/security/crypto.service.ts` | AES-256-GCM; formato almacenado: IV(12 B) + authTag(16 B) + ciphertext → base64 |
 | ClienteRepository | `src/infrastructure/repositories/cliente.repository.ts` | Cifra `nombre` y `numDocumento` antes de persistir; descifra al leer |
-| Tests unitarios de cifrado | `tests/unit/cifrado.test.ts` | 5 tests: round-trip, IV aleatorio, integridad GCM, error sin clave |
+| Tests unitarios de cifrado | `tests/unit/cifrado.test.ts` | 6 tests: round-trip, IV aleatorio, integridad GCM, error sin clave, guard longitud clave |
 | Tests de integración — entidades | `tests/integration/modelo.test.ts` | 12 tests: CRUD de los 7 modelos, UNIQUE de folio, CASCADE, secuencia |
 | Tests de integración — cifrado en BD | `tests/integration/cifrado.test.ts` | 3 tests: SELECT directo ≠ plaintext; round-trip cifrado; descifrado en repo |
+| Tests de integración — ramas repositorio | `tests/integration/cliente-repo.test.ts` | 3 tests: findById null, findByFormularioId con resultados, findByFormularioId vacío |
 | Setup global de Vitest | `tests/setup.ts` | Carga `.env` con `process.loadEnvFile` (Node 22+); establece clave de prueba |
 | `vitest.config.ts` | `vitest.config.ts` | Añadido `setupFiles: ['./tests/setup.ts']` |
 | CI actualizado | `.github/workflows/ci.yml` | Quita `\|\| true`; añade `prisma migrate deploy`; añade `ENCRYPTION_KEY` al job |
@@ -111,14 +112,17 @@ múltiples borradores sin folio + unicidad una vez asignado.
 | Métrica | Valor | Herramienta | Variación vs Sesión 1 |
 |---------|-------|-------------|----------------------|
 | KLOC (solo `src/`) | **0.10** (102 líneas) | `wc -l src/**/*.ts` | +0.09 KLOC (S1: ~0.01) |
-| KLOC (total TS: `src/` + `tests/`) | **0.48** (481 líneas) | `wc -l` | +0.43 KLOC |
-| Cobertura de código (%) | **87.8%** (stmts) | Vitest lcov | +0 pts ≈ (S1: ~100% sobre 1 archivo) |
+| KLOC (total TS: `src/` + `tests/`) | **0.57** (571 líneas) | `wc -l` | +0.52 KLOC |
+| Cobertura — statements | **100%** (41/41) | Vitest lcov v8 | 87.8% → 97.56% → **100%** (ver §7.1) |
+| Cobertura — ramas | **100%** (6/6) | Vitest lcov v8 | 66.66% → 83.33% → **100%** |
+| Cobertura — funciones | **100%** (10/10) | Vitest lcov v8 | 80% → 100% → **100%** |
+| Cobertura — líneas | **100%** (38/38) | Vitest lcov v8 | 92.1% → 97.36% → **100%** |
 | Complejidad ciclomática (máx/prom) | Pendiente CI | SonarCloud | — |
 | Code smells | Pendiente CI | SonarCloud | — |
 | Vulnerabilidades (crít/altas) | Pendiente CI | SonarCloud | — |
 | Debt ratio (%) | Pendiente CI | SonarCloud | — |
 | Defectos detectados | 1 (DEF-S2-01) | Manual | +1 |
-| Tests totales | **21** (6 unit + 15 integration) | Vitest | +20 (S1: 1) |
+| Tests totales | **25** (7 unit + 18 integration) | Vitest | +24 (S1: 1) |
 | Horas-persona | (completar al cerrar la sesión) | Bitácora del equipo | — |
 
 ### Acoplamiento entre entidades (medición manual)
@@ -146,13 +150,56 @@ Relaciones FK en el esquema (arcos del grafo de dependencias):
 
 ---
 
+### 7.1 Ciclo de medición — mejora de cobertura
+
+Aplicación del proceso Objetivo → Métrica → Recolección → Análisis → Acción al cierre de la sesión.
+
+**Objetivo:** Definition of Done (DEV_SPEC §7) exige cobertura ≥ 80% en la lógica de negocio asociada a cada spec implementada. `CryptoService` y `ClienteRepository` son la lógica de negocio de SPEC-SEC-01.
+
+**Métrica:** porcentaje de statements, ramas, funciones y líneas por archivo — reportado por Vitest con provider v8.
+
+**Recolección:** `npm run test:coverage` → tabla por archivo en terminal + `coverage/lcov.info` para SonarCloud.
+
+**Análisis — iteración 1 (cobertura inicial: 87.8% total):**
+
+| Archivo | Stmts | Branch | Funcs | Lines | Problema |
+|---------|-------|--------|-------|-------|---------|
+| `cliente.repository.ts` | 55.55% | 50% | 60% | 71.42% | `findByFormularioId` nunca llamada (0 calls); rama `!row → null` en `findById` no ejercitada |
+| `crypto.service.ts` | 95.83% | 75% | 100% | 95.65% | Guard `key.length !== 32` (línea 16) no ejercitado |
+
+Ambos archivos por debajo del umbral del 80% o con ramas críticas sin cubrir.
+
+**Acción 1 — `cliente.repository.ts`:**  
+Crear `tests/integration/cliente-repo.test.ts` con tres tests dirigidos:  
+- `findById('UUID-inexistente')` → cubre la rama `!row → return null`  
+- `findByFormularioId(id)` con 2 clientes → cubre el body completo incluido el map callback  
+- `findByFormularioId(id-sin-clientes)` → confirma retorno de array vacío sin error  
+
+Resultado: `cliente.repository.ts` → **100%** en todas las métricas. Total: 97.56% stmts / 83.33% ramas.
+
+**Análisis — iteración 2 (cobertura intermedia: 97.56%):**
+
+| Archivo | Stmts | Branch | Funcs | Lines | Problema |
+|---------|-------|--------|-------|-------|---------|
+| `crypto.service.ts` | 95.83% | 75% | 100% | 95.65% | `key.length !== 32` (línea 16): rama `true` no ejercitada |
+
+**Acción 2 — `crypto.service.ts`:**  
+Añadir un test en `tests/unit/cifrado.test.ts` que pase `Buffer.alloc(16).toString('base64')` (AES-128, longitud incorrecta) y verifique que `encrypt()` lanza `'ENCRYPTION_KEY debe decodificar exactamente 32 bytes'`.
+
+Resultado: `crypto.service.ts` → **100%**. Total: **100% stmts / 100% ramas / 100% funcs / 100% lines**.
+
+**Evaluación del ciclo:** el proceso detectó una cobertura insuficiente en la capa de cifrado (55% en el repositorio y rama de guard sin ejercitar), generó tests precisamente dirigidos a las ramas faltantes, y elevó la cobertura a 100% en 2 iteraciones. La herramienta (Vitest lcov + v8) permitió identificar los archivos y líneas exactas sin revisión manual del código.
+
+---
+
 ## 8. Pruebas añadidas
 
 | Archivo | Tipo | Qué cubre | Tests |
 |---------|------|-----------|-------|
-| `tests/unit/cifrado.test.ts` | Unitario | AES-256-GCM: round-trip, IV aleatorio, integridad de authTag, error sin clave (SPEC-SEC-01) | 5 |
+| `tests/unit/cifrado.test.ts` | Unitario | AES-256-GCM: round-trip, IV aleatorio, integridad de authTag, error sin clave, guard longitud incorrecta (SPEC-SEC-01) | 6 |
 | `tests/integration/modelo.test.ts` | Integración | CRUD de los 7 modelos Prisma; UNIQUE de folio; CASCADE ON DELETE; existencia y monotonía de `seq_folio_dds` (SPEC-DATA-01..03) | 12 |
 | `tests/integration/cifrado.test.ts` | Integración | SELECT crudo ≠ plaintext para `nombre` y `num_documento`; descifrado transparente en `ClienteRepository` (SPEC-SEC-01) | 3 |
+| `tests/integration/cliente-repo.test.ts` | Integración | Ramas de `ClienteRepository`: `findById` → null, `findByFormularioId` con resultados, `findByFormularioId` vacío (ciclo §7.1) | 3 |
 
 ---
 
@@ -168,6 +215,9 @@ _(se completa después del commit de cierre)_
 | `a426599` | `chore(ci): migrate deploy, ENCRYPTION_KEY y quitar \|\|true (Sesión 2)` | `.github/workflows/ci.yml`, `.env.example` |
 | `45d0eec` | `fix(dev): puerto 5433 para postgres local (DEF-S2-01)` | `docker-compose.yml` |
 | `3c2e354` | `docs(sesion-02): cierre con métricas reales, VOL y DEF (Sesión 2)` | `docs/sesiones/sesion-02.md` |
+| `038cead` | `docs(sesion-02): añadir hashes reales de commits al cierre` | `docs/sesiones/sesion-02.md` |
+| `d0d8d1d` | `test(s02): subir cobertura de cliente.repository sobre 80%` | `tests/integration/cliente-repo.test.ts` |
+| `80c0d6b` | `test(s02): cubrir guard de longitud de clave en CryptoService` | `tests/unit/cifrado.test.ts` |
 
 ---
 
@@ -219,18 +269,30 @@ SELECT sequence_name FROM information_schema.sequences;
 ---------------
  seq_folio_dds
 
-# tests:
- Test Files  4 passed (4)
-      Tests  21 passed (21)
-   Duration  1.00s
+# tests finales (tras ciclo de mejora de cobertura §7.1):
+ Test Files  5 passed (5)
+      Tests  25 passed (25)
+   Duration  1.19s
 
-# cobertura (Vitest v8):
+# cobertura final (Vitest v8) — progresión por iteración:
+#
+# Iteración 1 (tras implementación inicial, 21 tests):
+#   cliente.repository.ts  55.55%  50%  60%  71.42%
+#   crypto.service.ts      95.83%  75%  100% 95.65%
+#   All files              87.8%   66.66% 80%  92.1%
+#
+# Iteración 2 (tras cliente-repo.test.ts, 24 tests):
+#   cliente.repository.ts  100%    100% 100% 100%
+#   crypto.service.ts      95.83%  75%  100% 95.65%
+#   All files              97.56%  83.33% 100% 97.36%
+#
+# Iteración 3 (tras guard test en cifrado.test.ts, 25 tests):
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|
 File               | % Stmts | % Branch | % Funcs | % Lines |
- cliente.repo.ts   |   55.55 |       50 |      60 |   71.42 |
- crypto.service.ts |   95.83 |       75 |     100 |   95.65 |
-All files          |    87.8 |    66.66 |      80 |    92.1 |
+ cliente.repo.ts   |  100.00 |   100.00 |  100.00 |  100.00 |
+ crypto.service.ts |  100.00 |   100.00 |  100.00 |  100.00 |
+All files          |  100.00 |   100.00 |  100.00 |  100.00 |
 ```
 
 > SonarCloud (complejidad, code smells, vulnerabilidades, debt ratio): pendiente del
