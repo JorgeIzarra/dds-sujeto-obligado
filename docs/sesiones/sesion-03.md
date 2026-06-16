@@ -138,7 +138,7 @@ Se usa un singleton (`src/infrastructure/prisma-client.ts`) compartido por los c
 | ID | Descripción | Severidad | Estado | Acción |
 |----|-------------|-----------|--------|--------|
 | DEF001 | Ausencia de validación de formato de cédula panameña (RN-07) | Alta | ✅ Resuelto | `esCedulaValida()` con regex `^\d{1,2}-\d{1,4}-\d{1,6}$` en `/src/domain/validaciones.ts`; test SPEC-BHV-03 verifica que `'12345'` → 422 |
-| DEF-S3-01 | `Decimal` importado de `@prisma/client` en `tests/integration/modelo.test.ts` lanza error TS2305 en `tsc --noEmit` | Baja | ⚠️ Pre-existente (Sesión 2) | No afecta runtime (Vitest transpila con esbuild); se documenta aquí; corrección diferida a próxima sesión |
+| DEF-S3-01 | `Decimal` importado de `@prisma/client` en `tests/integration/modelo.test.ts` lanza error TS2305 en `tsc --noEmit` | Baja | ⚠️ Abierto (pre-existente S2) | CI **no afectado**: pipeline solo ejecuta ESLint + Vitest (esbuild); no hay paso `tsc --noEmit`. Error solo visible en typecheck local. Corrección diferida a Sesión 4: reemplazar `import { Decimal }` por el tipo nativo equivalente. |
 
 ---
 
