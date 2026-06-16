@@ -34,4 +34,28 @@ export class ClienteRepository {
       numDocumento: decrypt(row.numDocumento),
     }));
   }
+
+  // Crea el cliente si no existe para este formulario; lo actualiza si ya existe (RF-01)
+  async upsertByFormularioId(
+    formularioId: string,
+    data: Omit<Prisma.ClienteUncheckedCreateInput, 'formularioId'>,
+  ): Promise<Cliente> {
+    const existing = await this.prisma.cliente.findFirst({ where: { formularioId } });
+    if (existing) {
+      const updated = await this.prisma.cliente.update({
+        where: { id: existing.id },
+        data: {
+          ...data,
+          nombre: encrypt(data.nombre),
+          numDocumento: encrypt(data.numDocumento),
+        },
+      });
+      return {
+        ...updated,
+        nombre: data.nombre as string,
+        numDocumento: data.numDocumento as string,
+      };
+    }
+    return this.create({ formularioId, ...data });
+  }
 }
