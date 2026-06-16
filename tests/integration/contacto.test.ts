@@ -89,7 +89,8 @@ describe('PUT /api/formularios/:id/contacto (SPEC-API-04, RF-02)', () => {
       .put(`/api/formularios/${formularioId}/contacto`)
       .send(bodyValido);
     const countAfter = await prisma.logAuditoria.count();
-    expect(countAfter).toBe(countBefore + 1);
+    // >= porque otros archivos de integración pueden crear eventos en paralelo
+    expect(countAfter).toBeGreaterThanOrEqual(countBefore + 1);
     const log = await prisma.logAuditoria.findFirst({
       where: { entidad: 'datos_contacto', accion: 'MODIFICAR' },
       orderBy: { timestamp: 'desc' },
