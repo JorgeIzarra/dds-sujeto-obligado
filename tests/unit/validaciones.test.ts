@@ -34,6 +34,10 @@ describe('validarCorreo', () => {
   it('rechaza sin @', () => expect(validarCorreo('userexample.com')).toBe(false));
   it('rechaza cadena vacía', () => expect(validarCorreo('')).toBe(false));
   it('rechaza sin dominio tras @', () => expect(validarCorreo('user@')).toBe(false));
+  it('rechaza correo de más de 254 caracteres — guard ReDoS S5852', () => {
+    const largo = 'a'.repeat(200) + '@' + 'b'.repeat(50) + '.com'; // 255 chars
+    expect(validarCorreo(largo)).toBe(false);
+  });
 });
 
 // --- validarTelefono (RF-02) ---
