@@ -15,8 +15,11 @@ export default defineConfig({
         'src/index.ts',       // punto de entrada — no contiene lógica testeable
         'src/**/*.d.ts',
       ],
-      // Umbrales: se añaden en Sesión 4 cuando haya cobertura real.
-      // thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 }
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80, // alcanzado 90% de forma natural con TDD (Sesión 3)
+      },
     },
   },
 });
