@@ -42,6 +42,7 @@ A diferencia del Parcial 1 (diseño y pruebas simuladas), este PRD define un pro
 - Exportación del formulario a PDF.
 - Búsqueda de formularios por folio y por nombre.
 - Persistencia con retención calculada a 5 años.
+- Interfaz web server-rendered (EJS) con estética de software empresarial.
 
 ### Fuera de alcance (para este parcial)
 - Módulo completo de Diligencia Reforzada (solo se implementa la **redirección/alerta**).
@@ -164,7 +165,7 @@ Basado en el diagrama de clases del Parcial 1. Cada entidad mantiene su responsa
 - **Backend:** Node.js + TypeScript + Express
 - **Base de datos:** PostgreSQL (con `SEQUENCE` + `UNIQUE` para folio, índices para búsqueda)
 - **Cliente de BD:** Prisma (o `pg` directo)
-- **Frontend:** Express renderizando HTML con plantillas (EJS/Handlebars) + JS/TS de cliente para reactividad del badge
+- **Frontend:** Express server-rendered con EJS + JS de cliente vanilla (sin SPA/React); sesión dedicada (S8). La resolución del path de vistas en Docker es parte del alcance de S8. RNF-06 (usabilidad ≤ 10 min), RNF-07 (compatibilidad de navegadores) y RNF-09 (accesibilidad WCAG 2.1 AA) se verifican en S8.
 - **Pruebas:** Vitest + Supertest; cobertura en formato lcov
 - **Calidad/métricas:** SonarQube (o SonarCloud) + ESLint + Prettier
 - **Infraestructura:** Docker + docker-compose (app + PostgreSQL)

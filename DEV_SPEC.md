@@ -386,7 +386,30 @@ Una funcionalidad está **terminada** solo cuando:
 
 ---
 
-## 8. Cómo se conecta con el flujo de sesiones
+## 8. Especificación de vistas (Sesión 8)
+
+Mapa de vistas EJS → endpoint principal que consume → requisito que satisface.
+
+| Vista | Ruta UI | Endpoint principal | Requisito |
+|-------|---------|--------------------|-----------|
+| Login | `GET /login` | `POST /api/auth/login` (SPEC-API-01) | RNF-01 |
+| Identificación | `GET /formularios/:id/identificacion` | `PUT /api/formularios/:id/identificacion` (SPEC-API-03) | RF-01, RF-08 |
+| Contacto | `GET /formularios/:id/contacto` | `PUT /api/formularios/:id/contacto` (SPEC-API-04) | RF-02 |
+| Perfil económico | `GET /formularios/:id/perfil` | `PUT /api/formularios/:id/perfil-economico` (SPEC-API-05) | RF-03, RF-06 |
+| Checklist documentos | `GET /formularios/:id/documentos` | `POST /api/formularios/:id/documentos` (SPEC-API-06) | RF-05 |
+| Resumen / Guardar | `GET /formularios/:id/resumen` | `POST /api/formularios/:id/guardar` (SPEC-API-07) | RF-07, RF-08, RF-12 |
+| Exportar PDF | (botón en resumen) | `GET /api/formularios/:id/pdf` (SPEC-API-08) | RF-11 |
+| Búsqueda / Listado | `GET /formularios` | `GET /api/formularios` (SPEC-API-09) | RF — búsqueda |
+
+**Deuda resuelta en S8:**
+- Path de vistas EJS en Docker (deuda de S1/S3).
+- Badge reactivo de clasificación — listener `onChange` en la vista de perfil económico (resuelve DEF002, postergado de S4).
+
+**RNF verificados en UI:** RNF-06 (usabilidad ≤ 10 min), RNF-07 (Chrome/Firefox/Edge), RNF-09 (WCAG 2.1 AA).
+
+---
+
+## 9. Cómo se conecta con el flujo de sesiones
 
 Cada sesión del `PLAN_SESIONES.md` implementa un subconjunto de specs:
 
@@ -395,11 +418,12 @@ Cada sesión del `PLAN_SESIONES.md` implementa un subconjunto de specs:
 | 1 | (infraestructura; sin specs de negocio) |
 | 2 | SPEC-DATA-01..03, SPEC-SEC-01 |
 | 3 | SPEC-API-03/04, SPEC-RN-02, SPEC-SEC-02, SPEC-BHV-03/04 |
-| 4 | SPEC-RN-01, SPEC-API-05, SPEC-BHV-01 |
+| 4 | SPEC-RN-01, SPEC-API-05, SPEC-BHV-01 (API-only; badge → S8) |
 | 5 | SPEC-RN-03, SPEC-API-06/07 (folio), SPEC-DATA-01, SPEC-BHV-05/06 |
 | 6 | SPEC-SEC-04/05, SPEC-API-07 (PEP)/10, SPEC-RN-05, SPEC-BHV-02/08 |
 | 7 | SPEC-API-08/09, SPEC-SEC-03, SPEC-BHV-09 |
-| 8 | SPEC-SEC-06/07, SPEC-RN-04, SPEC-BHV-07; cierre de métricas |
+| 8 | Vistas EJS (§8): login, identificación, contacto, perfil+badge (DEF002), documentos, resumen, PDF, búsqueda; RNF-06/07/09 |
+| 9 | SPEC-SEC-06/07, SPEC-RN-04, SPEC-BHV-07; cierre de métricas |
 
 ---
 
