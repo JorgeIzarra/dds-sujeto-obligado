@@ -1,7 +1,7 @@
 // SPEC-DATA-01..03 — Integración: crear y leer todas las entidades contra la BD
 // Requiere: DATABASE_URL apuntando a postgres con la migración aplicada.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { PrismaClient, Decimal } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { ClienteRepository } from '../../src/infrastructure/repositories/cliente.repository';
 
 const prisma = new PrismaClient();
@@ -137,8 +137,8 @@ describe('SPEC-DATA-03 — PerfilEconomico', () => {
         formularioId,
         actividad: 'Comercio al por menor',
         fuenteIngresos: 'Salario',
-        ingresoMensual: new Decimal('3500.00'),
-        volumenTransacciones: new Decimal('5000.00'),
+        ingresoMensual: 3500.0,
+        volumenTransacciones: 5000.0,
       },
     });
     expect(Number(perfil.ingresoMensual)).toBeCloseTo(3500);
