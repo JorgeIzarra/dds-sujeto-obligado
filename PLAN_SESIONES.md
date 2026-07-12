@@ -9,9 +9,9 @@
 
 ## Cómo funciona este plan
 
-El proyecto se divide en **8 sesiones**. Cada sesión produce código, pruebas, un commit (o varios) y —obligatoriamente— **un documento de cierre detallado** que captura las métricas de ese punto en el tiempo.
+El proyecto se divide en **9 sesiones**. Cada sesión produce código, pruebas, un commit (o varios) y —obligatoriamente— **un documento de cierre detallado** que captura las métricas de ese punto en el tiempo.
 
-> **Por qué documentar tanto al final de cada sesión:** la documentación de cierre **no es burocracia, es la recolección de datos del Parcial 2.** Ocho cierres = ocho snapshots de KLOC, cobertura, complejidad, code smells, vulnerabilidades y defectos. Esa serie de 8 puntos es lo que permite mostrar la **evolución de las métricas en el tiempo**, que es justo lo que hace destacar la entrega. Si no se documenta al cierre, el dato se pierde para siempre.
+> **Por qué documentar tanto al final de cada sesión:** la documentación de cierre **no es burocracia, es la recolección de datos del Parcial 2.** Nueve cierres = nueve snapshots de KLOC, cobertura, complejidad, code smells, vulnerabilidades y defectos. Esa serie de 9 puntos es lo que permite mostrar la **evolución de las métricas en el tiempo**, que es justo lo que hace destacar la entrega. Si no se documenta al cierre, el dato se pierde para siempre.
 
 ### Regla de oro
 Ninguna sesión se da por cerrada hasta que su documento de cierre (`/docs/sesiones/sesion-NN.md`) esté completo, commiteado y con las métricas registradas.
@@ -94,7 +94,7 @@ Commitear frecuentemente y siempre al cerrar la sesión.
 
 ---
 
-## Las 8 sesiones
+## Las 9 sesiones
 
 ### Sesión 1 — Infraestructura y arnés de medición
 **Objetivo:** dejar todo listo para que desde la Sesión 2 ya se pueda medir. **Sin lógica de negocio.**
@@ -131,7 +131,7 @@ Commitear frecuentemente y siempre al cerrar la sesión.
 ### Sesión 3 — Identificación y contacto (RF-01, RF-02)
 **Objetivo:** primeras secciones funcionales del formulario.
 - Casos de uso: registrar identificación y contacto.
-- Endpoints + vistas (HTML).
+- Endpoints (API); vistas HTML diferidas a la Sesión 8.
 - Validación de formato de cédula con regex (RN-07, resuelve DEF001) — **seguridad: saneamiento de entradas**.
 - Validación de campos obligatorios (RF-08, CA-02).
 - Tests unitarios y de integración.
@@ -145,11 +145,11 @@ Commitear frecuentemente y siempre al cerrar la sesión.
 ### Sesión 4 — Perfil económico y clasificación de riesgo (RF-03, RF-06)
 **Objetivo:** el módulo de mayor lógica de negocio.
 - `PerfilEconomico` con `esClienteBajoRiesgo()` aplicando RN-01 (umbrales Art. 26).
-- Clasificación automática y badge reactivo en tiempo real (resuelve DEF002) — listener `onChange`.
+- Clasificación automática y exposición del resultado por endpoint (API-only; badge reactivo diferido a la Sesión 8).
 - Registro de la clasificación en `LogAuditoria` (RNF-05, CA-07).
 - Tests exhaustivos de los umbrales (casos límite: $4,900 vs $5,000, etc.).
 
-**Criterio de cierre:** clasifica correctamente todos los casos límite; badge se actualiza sin recargar (CA-05).
+**Criterio de cierre:** clasifica correctamente todos los casos límite; endpoint devuelve `clasificacionRiesgo` correcta (CA-05 — la reactividad del badge se implementa en la Sesión 8).
 **Métrica que aporta:** **complejidad ciclomática** (este es el método más ramificado — medir V(G) y mantener ≤ 10); densidad de defectos del módulo.
 **Documentación de cierre obligatoria** (medir y registrar la complejidad del clasificador en detalle).
 
@@ -195,12 +195,34 @@ Commitear frecuentemente y siempre al cerrar la sesión.
 
 ---
 
-### Sesión 8 — Hardening, métricas finales y diagramas
+### Sesión 8 — Frontend / capa de presentación
+**Objetivo:** construir la interfaz web que consume los endpoints ya construidos; resolver deuda técnica de vistas EJS en Docker; garantizar usabilidad (RNF-06) y accesibilidad (RNF-09).
+- Resolver el path de vistas EJS en Docker (deuda de S1/S3).
+- Shell / layout base con CSS sobrio de software empresarial (sin frameworks UI externos).
+- Vistas que consumen los endpoints ya construidos:
+  - Login (SPEC-API-01 / auth de S6).
+  - Identificación y contacto (RF-01, RF-02 / SPEC-API-03/04).
+  - Perfil económico con **badge reactivo en tiempo real** — listener `onChange` (resuelve DEF002, deuda de S4).
+  - Checklist de documentos (RF-05 / SPEC-API-06).
+  - Guardado / folio + exportar PDF (RF-07, RF-11 / SPEC-API-07/08).
+  - Búsqueda y listado de formularios (SPEC-API-09 / S7).
+- Control de acceso por rol en la UI (redirección si sesión inválida; menú según rol).
+- Accesibilidad WCAG 2.1 AA (RNF-09).
+- Compatibilidad Chrome, Firefox, Edge (RNF-07).
+- Tests de render de vistas y flujo de usuario completo.
+
+**Criterio de cierre:** flujo completo (login → formulario → guardar → PDF) completable en ≤ 10 min sin formación técnica (RNF-06); badge reactivo funciona sin recarga de página; WCAG AA verificado; 0 errores en render de vistas.
+**Métrica protagonista:** **usabilidad y accesibilidad** (RNF-06, RNF-09); también se mide el impacto de la UI sobre KLOC y cobertura.
+**Documentación de cierre obligatoria** (registrar evidencia de usabilidad, accesibilidad y resolución del path EJS en Docker).
+
+---
+
+### Sesión 9 — Hardening, métricas finales y diagramas
 **Objetivo:** cerrar calidad y consolidar las métricas del parcial.
 - Forzar HTTPS/TLS (RNF-04), revisión final de cabeceras y secretos.
 - Refactors finales para reducir debt ratio y code smells a meta (rating A, debt < 5%).
 - Resolver code smells y vulnerabilidades pendientes (meta: 0 críticas/altas).
-- **Recolección final de todas las métricas** y consolidación de la serie de las 8 sesiones (gráfico de evolución).
+- **Recolección final de todas las métricas** y consolidación de la serie de las 9 sesiones (gráfico de evolución).
 - **Actualizar los diagramas** de clases y de casos de uso para reflejar el sistema real construido.
 - Completar la **matriz de trazabilidad** final (Artículo → RF → Clase → Test → Defecto).
 - Calcular **productividad** a partir del historial de Git y de las horas-persona registradas.
@@ -222,14 +244,15 @@ Commitear frecuentemente y siempre al cerrar la sesión.
 | 5 | Folio/documentos | Proceso de medición (DEF003) |
 | 6 | Seguridad/roles/PEP | Vulnerabilidades, auditoría |
 | 7 | PDF/búsqueda | Debt ratio, code smells |
-| 8 | Hardening/cierre | Todas + evolución + diagramas |
+| 8 | Frontend/presentación | Usabilidad y accesibilidad (RNF-06, RNF-09) |
+| 9 | Hardening/cierre | Todas + evolución + diagramas |
 
 ---
 
 ## Acumulación de la documentación
 
-Toda la documentación de cierre vive en `/docs/sesiones/` (`sesion-01.md` … `sesion-08.md`). Al terminar la Sesión 8, esa carpeta contiene la **historia completa y medible** del proyecto, lista para redactar el entregable final del Parcial 2 sin reconstruir nada de memoria.
+Toda la documentación de cierre vive en `/docs/sesiones/` (`sesion-01.md` … `sesion-09.md`). Al terminar la Sesión 9, esa carpeta contiene la **historia completa y medible** del proyecto, lista para redactar el entregable final del Parcial 2 sin reconstruir nada de memoria.
 
 ---
 
-*Recordatorio final: documentar al cierre de cada sesión no es opcional. Es la diferencia entre tener una serie de 8 mediciones reales y tener que inventar números al final.*
+*Recordatorio final: documentar al cierre de cada sesión no es opcional. Es la diferencia entre tener una serie de 9 mediciones reales y tener que inventar números al final.*
