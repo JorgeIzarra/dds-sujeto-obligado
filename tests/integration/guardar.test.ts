@@ -140,6 +140,40 @@ describe('POST /api/formularios/:id/guardar (SPEC-API-07 parcial, RF-07, RF-08, 
     expect(res.body.error.codigo).toBe('DOCUMENTO_IDENTIDAD_NO_VERIFICADO');
   });
 
+  it('422 — documento verificado pero de tipo distinto al del cliente (RN-04, coincidencia exacta)', async () => {
+    const formularioId = await crearFormularioVacio();
+    await prisma.cliente.create({
+      data: {
+        formularioId,
+        nombre: 'cliente-tipo-distinto',
+        tipoDocumento: 'CEDULA',
+        numDocumento: 'doc-tipo-distinto',
+        nacionalidad: 'Panameña',
+        tipoCliente: 'NATURAL',
+        esPep: false,
+      },
+    });
+    await prisma.datosContacto.create({
+      data: { formularioId, direccion: 'Calle 1', telefono: '6000-1234', correo: 'test@test.com' },
+    });
+    await prisma.perfilEconomico.create({
+      data: {
+        formularioId,
+        actividad: 'Comercio',
+        fuenteIngresos: 'Salario',
+        ingresoMensual: 3000,
+        volumenTransacciones: 5000,
+      },
+    });
+    // Documento verificado, pero de tipo PASAPORTE mientras el cliente tiene tipoDocumento CEDULA
+    await prisma.documento.create({
+      data: { formularioId, tipo: 'PASAPORTE', verificado: true },
+    });
+    const res = await request(app).post(`/api/formularios/${formularioId}/guardar`);
+    expect(res.status).toBe(422);
+    expect(res.body.error.codigo).toBe('DOCUMENTO_IDENTIDAD_NO_VERIFICADO');
+  });
+
   it('200 — happy path: genera folio y cambia estado a GUARDADO (CA-03)', async () => {
     const formularioId = await crearFormularioCompleto({
       tieneDocumento: true,
