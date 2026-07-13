@@ -88,7 +88,7 @@ describe('GET /api/formularios (Búsqueda, SPEC-API-09)', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body).toBeInstanceOf(Array);
-    const ids = res.body.map((f: any) => f.id);
+    const ids = res.body.map((f: { id: string }) => f.id);
     expect(ids).toContain(form1Id);
     expect(ids).toContain(form2Id);
   });

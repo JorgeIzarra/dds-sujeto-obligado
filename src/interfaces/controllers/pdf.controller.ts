@@ -136,10 +136,11 @@ export async function postExportarPDF(req: Request, res: Response): Promise<void
         status: 'completed',
         data: Buffer.from(pdfBytes),
       });
-    } catch (err: any) {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Error desconocido generando PDF';
       pdfJobs.set(jobId, {
         status: 'failed',
-        error: err?.message || 'Error desconocido generando PDF',
+        error: errorMsg,
       });
     }
   }, 0);

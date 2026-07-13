@@ -102,15 +102,15 @@ describe('GET /api/formularios/:id/pdf (SPEC-API-08)', () => {
       .set('Authorization', `Bearer ${token}`);
     const { jobId } = exportRes.body;
 
-    // 2. Esperar a que se procese en la cola de macro-tareas de Node (setImmediate)
-    await new Promise((resolve) => setImmediate(resolve));
+    // 2. Esperar un momento a que se complete la generación asíncrona (setTimeout)
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // 3. Consultar estado del trabajo (polling)
     const pollRes = await request(app)
       .get(`/api/formularios/${formularioId}/pdf/${jobId}`)
       .set('Authorization', `Bearer ${token}`);
 
-    expect([200, 202]).toContain(pollRes.status);
+    expect(pollRes.status).toBe(200);
     if (pollRes.status === 200) {
       expect(pollRes.header['content-type']).toBe('application/pdf');
       expect(pollRes.header['content-disposition']).toContain('attachment');
