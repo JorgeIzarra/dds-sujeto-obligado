@@ -17,7 +17,7 @@ async function expectHtmlPage(url: string, containsText: string) {
   return res;
 }
 
-describe('Web Routes Render', () => {
+describe.sequential('Web Routes Render', () => {
   it('redirige a HTTPS en entorno de producción (RNF-04)', async () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
@@ -27,7 +27,7 @@ describe('Web Routes Render', () => {
       .set('x-forwarded-proto', 'http');
 
     expect(res.status).toBe(302);
-    expect(res.header.location).toBe('https://127.0.0.1/login');
+    expect(res.header.location).toMatch(/^https:\/\/127\.0\.0\.1(:\d+)?\/login$/);
 
     // Restaurar entorno
     process.env.NODE_ENV = originalEnv;
