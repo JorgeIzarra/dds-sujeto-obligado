@@ -21,13 +21,17 @@ export class DocumentoRepository {
     });
   }
 
-  // RN-04, CA-08: existe un documento del mismo tipo que el documento de identidad del cliente, verificado
+  // RN-04, CA-08: existe un documento del mismo tipo que el documento de identidad del cliente (o tipo genérico IDENTIFICACION), verificado
   async existeIdentidadVerificada(
     formularioId: string,
     tipoDocumentoCliente: string
   ): Promise<boolean> {
     const documento = await this.prisma.documento.findFirst({
-      where: { formularioId, tipo: tipoDocumentoCliente, verificado: true },
+      where: {
+        formularioId,
+        tipo: { in: [tipoDocumentoCliente, 'IDENTIFICACION'] },
+        verificado: true,
+      },
     });
     return documento !== null;
   }

@@ -20,17 +20,37 @@ async function expectHtmlPage(url: string, containsText: string) {
 describe.sequential('Web Routes Render', () => {
   it('redirige a HTTPS en entorno de producción (RNF-04)', async () => {
     const originalEnv = process.env.NODE_ENV;
+    const originalHost = process.env.APP_HOST;
     process.env.NODE_ENV = 'production';
+    process.env.APP_HOST = 'app.dds.example.com';
 
     const res = await request(app)
       .get('/login')
       .set('x-forwarded-proto', 'http');
 
-    expect(res.status).toBe(302);
-    expect(res.header.location).toMatch(/^https:\/\/127\.0\.0\.1(:\d+)?\/login$/);
+    expect(res.status).toBe(301);
+    expect(res.header.location).toBe('https://app.dds.example.com/login');
 
     // Restaurar entorno
     process.env.NODE_ENV = originalEnv;
+    process.env.APP_HOST = originalHost;
+  });
+
+  it('no redirige si APP_HOST no está configurado (RNF-04 — sin host seguro)', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalHost = process.env.APP_HOST;
+    process.env.NODE_ENV = 'production';
+    delete process.env.APP_HOST;
+
+    const res = await request(app)
+      .get('/login')
+      .set('x-forwarded-proto', 'http');
+
+    // Sin APP_HOST el middleware cede el control al siguiente handler (200 normal).
+    expect(res.status).toBe(200);
+
+    process.env.NODE_ENV = originalEnv;
+    process.env.APP_HOST = originalHost;
   });
 
   it('no redirige a HTTPS en producción si la cabecera es https', async () => {

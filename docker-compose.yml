@@ -32,6 +32,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       # SPEC-SEC-01: clave AES-256 (base64, 32 bytes) para cifrado PII en reposo
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # S5146: Hostname canónico para el middleware de redirección HTTPS (no usa req.headers.host)
+      APP_HOST: ${APP_HOST:-localhost:3001}
     depends_on:
       postgres:
         condition: service_healthy
