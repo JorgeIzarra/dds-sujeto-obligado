@@ -11,6 +11,17 @@ export function createApp(): Application {
   // SPEC-SEC-07: Cabeceras de seguridad HTTP
   app.use(helmet());
 
+  // Forzar HTTPS en producción (RNF-04)
+  if (process.env.NODE_ENV === 'production') {
+    app.use((req: Request, res: Response, next): void => {
+      if (req.headers['x-forwarded-proto'] !== 'https') {
+        res.redirect(`https://${req.headers.host || 'localhost'}${req.url}`);
+        return;
+      }
+      next();
+    });
+  }
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

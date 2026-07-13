@@ -18,6 +18,35 @@ async function expectHtmlPage(url: string, containsText: string) {
 }
 
 describe('Web Routes Render', () => {
+  it('redirige a HTTPS en entorno de producción (RNF-04)', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    const res = await request(app)
+      .get('/login')
+      .set('x-forwarded-proto', 'http');
+
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe('https://127.0.0.1/login');
+
+    // Restaurar entorno
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it('no redirige a HTTPS en producción si la cabecera es https', async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    const res = await request(app)
+      .get('/login')
+      .set('x-forwarded-proto', 'https');
+
+    expect(res.status).toBe(200);
+
+    // Restaurar entorno
+    process.env.NODE_ENV = originalEnv;
+  });
+
   it('GET / — redirige a /login', async () => {
     const res = await request(app).get('/');
     expect(res.status).toBe(302);
