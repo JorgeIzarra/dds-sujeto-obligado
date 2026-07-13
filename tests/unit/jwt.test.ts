@@ -39,4 +39,21 @@ describe('jwt.service', () => {
     // Invalid format
     expect(verifyToken('invalidtoken')).toBeNull();
   });
+
+  it('lanza error en producción si el secreto es placeholder (SPEC-SEC-06)', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalSecret = process.env.JWT_SECRET;
+
+    process.env.NODE_ENV = 'production';
+    process.env.JWT_SECRET = 'test_jwt_secret_key_placeholder_for_development_only';
+
+    const payload: JWTPayload = { id: 'uuid', email: 'test@example.com', rol: 'OFICIAL' };
+
+    expect(() => signToken(payload)).toThrowError(/JWT_SECRET debe estar configurado en producción/);
+    expect(() => verifyToken('some.token.here')).toThrowError(/JWT_SECRET debe estar configurado en producción/);
+
+    // Restaurar entorno
+    process.env.NODE_ENV = originalEnv;
+    process.env.JWT_SECRET = originalSecret;
+  });
 });
