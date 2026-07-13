@@ -17,13 +17,14 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 | Entregable | Archivo(s) | Notas |
 |------------|-----------|-------|
 | Resolutor de vistas en Docker | `Dockerfile` | Descomentada la línea de copiado de las plantillas EJS a la imagen de producción en Docker. |
-| Controlador de consulta individual | `src/interfaces/controllers/formulario.controller.ts` | Añadida la función `getFormularioById` que recupera el formulario y descifra en memoria el nombre y documento. |
+| Controlador de consulta individual | `src/interfaces/controllers/formulario.controller.ts` | Añadida la función `getFormularioById` que recupera el formulario y descifra en memoria el nombre y el número de documento de identidad del cliente usando `CryptoService.decrypt`. |
 | Enrutador de la API | `src/interfaces/routes/formularios.routes.ts` | Registrada la ruta `GET /:id` protegida por autenticación. |
 | Enrutador Web | `src/interfaces/routes/web.routes.ts` | Creado enrutador para mapear peticiones de páginas web y renderizar las plantillas EJS. |
 | Estructuras de Layout | `src/interfaces/views/layout_header.ejs`, `layout_footer.ejs` | Estructuras de layout HTML5 comunes. Incluye estilos CSS puros modernos (Outfit font, fondos oscuros, glassmorphism, gradientes HSL y enfoque visible para teclado). |
 | Páginas de Flujo | `login.ejs`, `busqueda.ejs`, `identificacion.ejs`, `contacto.ejs`, `perfil.ejs`, `documentos.ejs`, `resumen.ejs` | Implementado el flujo completo de 5 pasos con llamadas `fetch` seguras (añade `Authorization: Bearer [token]`) y almacenamiento en `sessionStorage`. |
 | Badge reactivo de riesgo (DEF002) | `src/interfaces/views/perfil.ejs` | Script del lado del cliente que escucha eventos `input` en ingresos/volumen y actualiza el badge al instante de forma reactiva. |
-| Pruebas de integración de Vistas | `tests/integration/web.test.ts` | 7 tests de integración para comprobar que las vistas renderizan su contenido HTML respectivo con estatus 200. |
+| Pruebas de integración de Vistas | `tests/integration/web.test.ts` | 8 tests de integración para comprobar que las vistas renderizan su contenido HTML respectivo con estatus 200 y redirección del home. |
+| Pruebas de cobertura y robustez | `tests/integration/formulario-api.test.ts`, `tests/unit/auth-middleware.test.ts`, `tests/unit/auditoria-repository.test.ts` | 17 nuevos tests para lograr 100% de cobertura en `formulario.controller.ts`, `auth.middleware.ts` y `auditoria.repository.ts`, superando con holgura el umbral de ramas del 80%. |
 
 ---
 
@@ -66,12 +67,12 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 
 | Métrica | Valor | Herramienta | Variación vs Sesión 7 |
 |---------|-------|-------------|----------------------|
-| KLOC `src/` | **1.332** (1332 líneas) | estimación/conteo | +0.177 (S7: 1.155) |
-| KLOC total (`src/` + `tests/`) | **3.447** (3447 líneas) | estimación/conteo | +0.411 (S7: 3.036) |
-| Cobertura (estimación) | **~98%** | Vitest | Mantenida |
+| KLOC `src/` | **1.350** (1350 líneas) | estimación/conteo | +0.195 (S7: 1.155) |
+| KLOC total (`src/` + `tests/`) | **3.805** (3805 líneas) | estimación/conteo | +0.769 (S7: 3.036) |
+| Cobertura de Ramas (estimación) | **~85%** | Vitest | **+10%** (Supera umbral del 80%) |
 | Complejidad ciclomática — `getFormularioById()` | **V(G) = 3** | Conteo manual | Dentro del límite (≤ 10) |
 | Complejidad ciclomática — `postCrearFormulario()`| **V(G) = 2** | Conteo manual | Dentro del límite (≤ 10) |
-| Tests totales | **141** | Vitest | +7 (S7: 134) |
+| Tests totales | **159** | Vitest | +25 (S7: 134) |
 | Defectos detectados | 1 (resuelto en Docker) | - | - |
 
 ---
@@ -79,13 +80,18 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 ## 7. Pruebas añadidas
 
 - `tests/integration/web.test.ts`:
-  - `GET /login` -> 200 (HTML).
-  - `GET /formularios` -> 200 (HTML).
-  - `GET /formularios/:id/identificacion` -> 200 (HTML).
-  - `GET /formularios/:id/contacto` -> 200 (HTML).
-  - `GET /formularios/:id/perfil` -> 200 (HTML).
-  - `GET /formularios/:id/documentos` -> 200 (HTML).
-  - `GET /formularios/:id/resumen` -> 200 (HTML).
+  - `GET /` -> Redirección a `/login`.
+  - `GET /login`, `GET /formularios`, etc. -> 200 (HTML).
+- `tests/integration/formulario-api.test.ts`:
+  - `POST /api/formularios` -> 201 (Crea borrador) y 401 (Sin token).
+  - `GET /api/formularios/:id` -> 200 (Decrypted data) y 404 (ID no existe).
+  - `PUT /api/formularios/:id` -> 200 (Supervisor edita), 422 (Body inválido) y 403 (Oficial rechazado).
+- `tests/unit/auth-middleware.test.ts`:
+  - `authenticate` -> Valida header Bearer correcto y fallos.
+  - `authorize` -> Valida roles autorizados y accesos directos denegados.
+  - `checkEdicionFormulario` -> Valida id inexistente, 404 y bloqueo de edición de formularios aprobados por oficiales.
+- `tests/unit/auditoria-repository.test.ts`:
+  - Valida inserciones de auditoría con y sin ID de entidad (`?? null` branch).
 
 ---
 
@@ -96,6 +102,7 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 - `feat(frontend): calculo y badge reactivo de riesgo en tiempo real (DEF002)`
 - `fix(docker): resolucion de path de vistas EJS en produccion Docker`
 - `test(frontend): pruebas de integracion de renderizado de paginas EJS`
+- `test(cobertura): tests unitarios y de integracion para lograr 100% de cobertura en controladores y middlewares`
 
 ---
 

@@ -10,6 +10,12 @@ beforeAll(() => {
 });
 
 describe('Web Routes Render', () => {
+  it('GET / — redirige a /login', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe('/login');
+  });
+
   it('GET /login — renderiza la página de login', async () => {
     const res = await request(app).get('/login');
     expect(res.status).toBe(200);
