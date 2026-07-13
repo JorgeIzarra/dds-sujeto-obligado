@@ -23,10 +23,20 @@ export function createApp(): Application {
   );
 
   // Forzar HTTPS en producción (RNF-04)
+  // S5146: No usamos req.headers.host (controlable por el atacante) sino APP_HOST configurado
+  // en variables de entorno. El path también se valida para rechazar URLs externas forjadas.
   app.use((req: Request, res: Response, next): void => {
     if (process.env.NODE_ENV === 'production') {
       if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
-        res.redirect(`https://${req.headers.host || 'localhost'}${req.url}`);
+        const appHost = process.env.APP_HOST;
+        if (!appHost) {
+          // Sin APP_HOST configurado no podemos construir una URL segura: pasamos al siguiente middleware.
+          next();
+          return;
+        }
+        // Validar que req.url sea una ruta relativa segura (no contiene protocolo ni doble barra inicial).
+        const safePath = /^\/(?!\/)[^]*$/.test(req.url) ? req.url : '/';
+        res.redirect(301, `https://${appHost}${safePath}`);
         return;
       }
     }
