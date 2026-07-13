@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, JWTPayload } from './jwt.service';
+import { verifyToken } from './jwt.service';
 import { prisma } from '../infrastructure/prisma-client';
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
