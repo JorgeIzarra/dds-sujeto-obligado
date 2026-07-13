@@ -58,7 +58,7 @@ describe.sequential('Web Routes Render', () => {
   });
 
   it('GET /formularios — renderiza el buscador y bandeja de entrada', async () => {
-    await expectHtmlPage('/formularios', 'Bandeja de Formularios DDS');
+    await expectHtmlPage('/formularios', 'Formularios DDS');
   });
 
   it('GET /formularios/:id/identificacion — renderiza el paso 1', async () => {

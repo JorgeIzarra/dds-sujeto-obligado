@@ -30,7 +30,7 @@
       <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">
         Clasificación de Riesgo Realtime
       </span>
-      <div id="riesgo-badge" style="display: inline-block; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text-secondary); transition: var(--transition);">
+      <div id="riesgo-badge" style="display: inline-block; padding: 0.5rem 1rem; border-radius: 2px; font-weight: 600; font-size: 0.85rem; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-muted); transition: var(--transition);">
         Calculando...
       </div>
     </div>
@@ -65,9 +65,9 @@
       </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
-      <a href="/formularios/<%= id %>/contacto" class="btn btn-secondary">⬅️ Paso Anterior</a>
-      <button type="submit" class="btn btn-primary">Siguiente Paso ➡️</button>
+    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1.5rem;">
+      <a href="/formularios/<%= id %>/contacto" class="btn btn-secondary">Paso anterior</a>
+      <button type="submit" class="btn btn-primary">Siguiente paso</button>
     </div>
   </form>
 </div>
@@ -120,21 +120,21 @@
 
     const badge = document.getElementById('riesgo-badge');
     if (clasificacion === 'BAJO') {
-      badge.textContent = 'BAJO (DDS ELEGIBLE)';
-      badge.style.background = 'rgba(16, 185, 129, 0.15)';
-      badge.style.color = 'var(--color-success)';
-      badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      badge.textContent = 'BAJO · DDS ELEGIBLE';
+      badge.style.background = 'var(--success-soft)';
+      badge.style.color = 'var(--success)';
+      badge.style.borderColor = 'var(--success)';
     } else {
       let razon = '';
       if (esPep) razon = 'PEP';
-      else if (ingreso > 5000 && volumen > 10000) razon = 'Ingreso y Vol.';
-      else if (ingreso > 5000) razon = 'Ingreso > $5k';
-      else razon = 'Volumen > $10k';
+      else if (ingreso > 5000 && volumen > 10000) razon = 'INGRESO Y VOL.';
+      else if (ingreso > 5000) razon = 'INGRESO > $5K';
+      else razon = 'VOLUMEN > $10K';
 
-      badge.textContent = `REFORZADO (${razon})`;
-      badge.style.background = 'rgba(239, 68, 68, 0.15)';
-      badge.style.color = 'var(--color-error)';
-      badge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      badge.textContent = `REFORZADO · ${razon}`;
+      badge.style.background = 'var(--error-soft)';
+      badge.style.color = 'var(--error)';
+      badge.style.borderColor = 'var(--error)';
     }
   }
 

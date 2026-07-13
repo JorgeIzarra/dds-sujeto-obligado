@@ -1,10 +1,11 @@
   </main>
-  <footer style="margin-top: auto; padding: 2rem; border-top: 1px solid var(--glass-border); text-align: center; font-size: 0.8rem; color: var(--text-secondary); background: rgba(15, 23, 42, 0.4);">
-    <p style="margin: 0;">Sistema de Debida Diligencia Simplificada (DDS) &copy; 2026. Cumplimiento Regulatorio — Superintendencia de Sujetos Obligados No Financieros (SSNF).</p>
+  <footer style="margin-top: auto; padding: 1.75rem 2rem; border-top: 1px solid var(--rule); text-align: center; font-size: 0.75rem; color: var(--ink-faint); background: var(--surface);">
+    <p style="margin: 0; max-width: none; color: var(--ink-faint); letter-spacing: 0.02em;">
+      Sistema de Debida Diligencia Simplificada (DDS) &middot; Cumplimiento Regulatorio SSNF &middot; Ley 23 de 2015
+    </p>
   </footer>
 
   <script>
-    // Configuración global de sesión y autenticación
     const token = sessionStorage.getItem('token');
     const rol = sessionStorage.getItem('rol');
     const isLoginPage = window.location.pathname === '/login';
@@ -14,14 +15,12 @@
     }
 
     if (token) {
-      // Mostrar menú de navegación y actualizar badge de rol
       const mainNav = document.getElementById('main-nav');
       if (mainNav) mainNav.style.display = 'block';
 
       const roleBadge = document.getElementById('user-role-badge');
       if (roleBadge) roleBadge.textContent = rol;
 
-      // Destacar pestaña activa
       const currentPath = window.location.pathname;
       const navList = document.getElementById('nav-list');
       if (navList && (currentPath === '/formularios' || currentPath === '/')) {
@@ -29,7 +28,6 @@
       }
     }
 
-    // Botón de salir
     const logoutBtn = document.getElementById('logout-button');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -39,7 +37,7 @@
       });
     }
 
-    // Funciones globales de alertas
+    // Alertas sin iconos: etiqueta tipográfica en monospace + borde lateral
     function showAlert(mensaje, tipo = 'success') {
       const container = document.getElementById('alert-container');
       if (!container) return;
@@ -47,24 +45,41 @@
       const alertDiv = document.createElement('div');
       alertDiv.className = `alert alert-${tipo}`;
       alertDiv.role = 'alert';
-      
-      let icon = 'ℹ️';
-      if (tipo === 'success') icon = '✅';
-      if (tipo === 'warning') icon = '⚠️';
-      if (tipo === 'error') icon = '❌';
 
-      alertDiv.innerHTML = `<span>${icon}</span> <span>${mensaje}</span>`;
+      const labels = {
+        success: 'Completado',
+        warning: 'Atencion',
+        error: 'Error',
+        info: 'Informacion'
+      };
+
+      const label = document.createElement('span');
+      label.className = 'alert-label';
+      label.textContent = labels[tipo] || labels.info;
+
+      const msg = document.createElement('span');
+      msg.className = 'alert-msg';
+      msg.textContent = mensaje;
+
+      alertDiv.appendChild(label);
+      alertDiv.appendChild(msg);
       container.appendChild(alertDiv);
 
-      // Eliminar alerta automáticamente a los 5 segundos
+      alertDiv.style.opacity = '0';
+      alertDiv.style.transform = 'translateY(-4px)';
+      alertDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      requestAnimationFrame(() => {
+        alertDiv.style.opacity = '1';
+        alertDiv.style.transform = 'translateY(0)';
+      });
+
       setTimeout(() => {
         alertDiv.style.opacity = '0';
-        alertDiv.style.transition = 'opacity 0.5s ease';
-        setTimeout(() => alertDiv.remove(), 500);
+        alertDiv.style.transform = 'translateY(-4px)';
+        setTimeout(() => alertDiv.remove(), 300);
       }, 5000);
     }
 
-    // Helper para realizar peticiones fetch seguras con el token
     async function apiFetch(url, options = {}) {
       const token = sessionStorage.getItem('token');
       const headers = {
@@ -76,11 +91,10 @@
       try {
         const response = await fetch(url, { ...options, headers });
         if (response.status === 401) {
-          // Token expirado o inválido, redirigir al login
           sessionStorage.removeItem('token');
           sessionStorage.removeItem('rol');
           window.location.href = '/login';
-          throw new Error('Sesión expirada');
+          throw new Error('Sesion expirada');
         }
         return response;
       } catch (err) {

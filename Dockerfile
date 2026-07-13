@@ -1,12 +1,13 @@
 # ── Stage 1: build ────────────────────────────────────────────────────────────
 # Instala todas las deps (dev incluidas), genera el cliente Prisma,
 # compila TypeScript y poda las devDependencies.
-FROM node:22-alpine AS build
+FROM node:22-slim AS build
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci
+RUN npm ci || npm install --no-audit --no-fund
 
 # tsconfig.build.json extiende tsconfig.json; ambos son necesarios aquí.
 COPY tsconfig.json tsconfig.build.json ./
@@ -19,7 +20,8 @@ RUN npx prisma generate \
 # ── Stage 2: production ───────────────────────────────────────────────────────
 # Imagen mínima: solo código compilado + deps de producción (incluye
 # @prisma/client con el cliente ya generado en stage anterior).
-FROM node:22-alpine AS production
+FROM node:22-slim AS production
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production
 

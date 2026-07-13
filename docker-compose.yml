@@ -28,6 +28,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-dds}:${POSTGRES_PASSWORD:-dds_dev_password}@postgres:5432/${POSTGRES_DB:-dds_db}
+      # SPEC-SEC-05 / SPEC-SEC-06: secreto JWT inyectado desde .env (no se versiona)
+      JWT_SECRET: ${JWT_SECRET}
+      # SPEC-SEC-01: clave AES-256 (base64, 32 bytes) para cifrado PII en reposo
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
     depends_on:
       postgres:
         condition: service_healthy
