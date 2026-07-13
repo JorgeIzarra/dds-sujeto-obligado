@@ -45,12 +45,12 @@ export async function postDocumento(req: Request, res: Response): Promise<void> 
     verificado: data.verificado,
   });
 
-  // SPEC-SEC-04: auditoría obligatoria; usuarioId null hasta Sesión 6
+  // SPEC-SEC-04: auditoría obligatoria
   await auditoriaRepo.registrarEvento({
     accion: 'CREAR',
     entidad: 'documento',
     entidadId: documento.id,
-    usuarioId: null,
+    usuarioId: req.usuario?.id || null,
     detalle: { tipo: documento.tipo, formularioId: req.params.id },
   });
 

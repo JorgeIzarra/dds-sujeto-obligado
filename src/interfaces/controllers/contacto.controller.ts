@@ -39,12 +39,12 @@ export async function putContacto(req: Request, res: Response): Promise<void> {
 
   const contacto = await contactoRepo.upsertByFormularioId(req.params.id, parsed.data);
 
-  // SPEC-SEC-04: auditoría obligatoria; usuarioId null hasta Sesión 6
+  // SPEC-SEC-04: auditoría obligatoria
   await auditoriaRepo.registrarEvento({
     accion: 'MODIFICAR',
     entidad: 'datos_contacto',
     entidadId: contacto.id,
-    usuarioId: null,
+    usuarioId: req.usuario?.id || null,
     detalle: { formularioId: req.params.id },
   });
 

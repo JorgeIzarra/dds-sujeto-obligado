@@ -1,7 +1,7 @@
 // SPEC-RN-01 — Tabla de verdad de clasificarRiesgo (RF-06, RN-01, Art. 26)
 // SPEC-BHV-01: Given perfil bajo → When clasifica → Then BAJO
 import { describe, it, expect } from 'vitest';
-import { clasificarRiesgo } from '../../src/domain/clasificacion';
+import { clasificarRiesgo, puedeGuardarseComoDDS } from '../../src/domain/clasificacion';
 
 describe('clasificarRiesgo (SPEC-RN-01, RF-06, Art. 26)', () => {
   it('BAJO cuando ingreso 4900, volumen 8000, esPEP=false (SPEC-BHV-01)', () => {
@@ -44,3 +44,14 @@ describe('clasificarRiesgo (SPEC-RN-01, RF-06, Art. 26)', () => {
     expect(clasificarRiesgo({ ingresoMensual: 0, volumenMensual: 0, esPEP: false })).toBe('BAJO');
   });
 });
+
+describe('puedeGuardarseComoDDS (SPEC-RN-05, RF-12, RN-02, Art. 26)', () => {
+  it('true cuando esPEP es false', () => {
+    expect(puedeGuardarseComoDDS({ ingresoMensual: 1000, volumenMensual: 2000, esPEP: false })).toBe(true);
+  });
+
+  it('false cuando esPEP es true', () => {
+    expect(puedeGuardarseComoDDS({ ingresoMensual: 1000, volumenMensual: 2000, esPEP: true })).toBe(false);
+  });
+});
+

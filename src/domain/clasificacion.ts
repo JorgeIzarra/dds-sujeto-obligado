@@ -13,3 +13,9 @@ export function clasificarRiesgo(p: PerfilRiesgo): 'BAJO' | 'NO_ELEGIBLE' {
   if (p.volumenMensual > 10000) return 'NO_ELEGIBLE';
   return 'BAJO';
 }
+
+// SPEC-RN-05: elegibilidad PEP para DDS
+export function puedeGuardarseComoDDS(p: PerfilRiesgo): boolean {
+  return !p.esPEP;
+}
+
