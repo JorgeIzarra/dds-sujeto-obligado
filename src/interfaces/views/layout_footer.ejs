@@ -1,0 +1,93 @@
+  </main>
+  <footer style="margin-top: auto; padding: 2rem; border-top: 1px solid var(--glass-border); text-align: center; font-size: 0.8rem; color: var(--text-secondary); background: rgba(15, 23, 42, 0.4);">
+    <p style="margin: 0;">Sistema de Debida Diligencia Simplificada (DDS) &copy; 2026. Cumplimiento Regulatorio — Superintendencia de Sujetos Obligados No Financieros (SSNF).</p>
+  </footer>
+
+  <script>
+    // Configuración global de sesión y autenticación
+    const token = sessionStorage.getItem('token');
+    const rol = sessionStorage.getItem('rol');
+    const isLoginPage = window.location.pathname === '/login';
+
+    if (!token && !isLoginPage) {
+      window.location.href = '/login';
+    }
+
+    if (token) {
+      // Mostrar menú de navegación y actualizar badge de rol
+      const mainNav = document.getElementById('main-nav');
+      if (mainNav) mainNav.style.display = 'block';
+
+      const roleBadge = document.getElementById('user-role-badge');
+      if (roleBadge) roleBadge.textContent = rol;
+
+      // Destacar pestaña activa
+      const currentPath = window.location.pathname;
+      const navList = document.getElementById('nav-list');
+      if (navList && (currentPath === '/formularios' || currentPath === '/')) {
+        navList.classList.add('active');
+      }
+    }
+
+    // Botón de salir
+    const logoutBtn = document.getElementById('logout-button');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('rol');
+        window.location.href = '/login';
+      });
+    }
+
+    // Funciones globales de alertas
+    function showAlert(mensaje, tipo = 'success') {
+      const container = document.getElementById('alert-container');
+      if (!container) return;
+
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${tipo}`;
+      alertDiv.role = 'alert';
+      
+      let icon = 'ℹ️';
+      if (tipo === 'success') icon = '✅';
+      if (tipo === 'warning') icon = '⚠️';
+      if (tipo === 'error') icon = '❌';
+
+      alertDiv.innerHTML = `<span>${icon}</span> <span>${mensaje}</span>`;
+      container.appendChild(alertDiv);
+
+      // Eliminar alerta automáticamente a los 5 segundos
+      setTimeout(() => {
+        alertDiv.style.opacity = '0';
+        alertDiv.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => alertDiv.remove(), 500);
+      }, 5000);
+    }
+
+    // Helper para realizar peticiones fetch seguras con el token
+    async function apiFetch(url, options = {}) {
+      const token = sessionStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(options.headers || {})
+      };
+
+      try {
+        const response = await fetch(url, { ...options, headers });
+        if (response.status === 401) {
+          // Token expirado o inválido, redirigir al login
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('rol');
+          window.location.href = '/login';
+          throw new Error('Sesión expirada');
+        }
+        return response;
+      } catch (err) {
+        console.error('Error de red API:', err);
+        throw err;
+      }
+    }
+  </script>
+</body>
+</html>

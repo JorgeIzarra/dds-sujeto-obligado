@@ -29,8 +29,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 
 # Las vistas EJS (añadidas en Sesión 3) se copian desde src/interfaces/views/.
-# Descomenta esta línea cuando existan vistas:
-# COPY src/interfaces/views ./src/interfaces/views
+COPY src/interfaces/views ./src/interfaces/views
 
 EXPOSE 3000
 

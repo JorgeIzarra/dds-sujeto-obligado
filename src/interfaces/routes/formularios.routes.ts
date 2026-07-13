@@ -4,7 +4,7 @@ import { putContacto } from '../controllers/contacto.controller';
 import { putPerfilEconomico } from '../controllers/perfil-economico.controller';
 import { postDocumento } from '../controllers/documento.controller';
 import { postGuardar } from '../controllers/guardar.controller';
-import { putFormulario } from '../controllers/formulario.controller';
+import { putFormulario, getFormularioById, postCrearFormulario } from '../controllers/formulario.controller';
 import { postExportarPDF, getPDFJob } from '../controllers/pdf.controller';
 import { getFormularios } from '../controllers/busqueda.controller';
 import { authenticate, authorize, checkEdicionFormulario } from '../../security/auth.middleware';
@@ -16,6 +16,12 @@ router.use(authenticate);
 
 // SPEC-API-09: Búsqueda general
 router.get('/', getFormularios);
+
+// POST new blank formulario
+router.post('/', postCrearFormulario);
+
+// GET single decrypted formulario
+router.get('/:id', getFormularioById);
 
 router.put('/:id/identificacion', checkEdicionFormulario, putIdentificacion);
 router.put('/:id/contacto', checkEdicionFormulario, putContacto);

@@ -1,0 +1,180 @@
+<%- include('layout_header') %>
+
+<div class="glass-card" style="max-width: 800px; margin: 2rem auto;">
+  <!-- Progress Wizard -->
+  <div class="wizard-steps">
+    <a href="/formularios/<%= id %>/identificacion" class="wizard-step completed">
+      <span class="step-number">1</span> Identificación
+    </a>
+    <a href="/formularios/<%= id %>/contacto" class="wizard-step completed">
+      <span class="step-number">2</span> Contacto
+    </a>
+    <a href="/formularios/<%= id %>/perfil" class="wizard-step active">
+      <span class="step-number">3</span> Perfil
+    </a>
+    <a href="/formularios/<%= id %>/documentos" class="wizard-step">
+      <span class="step-number">4</span> Documentos
+    </a>
+    <a href="/formularios/<%= id %>/resumen" class="wizard-step">
+      <span class="step-number">5</span> Resumen
+    </a>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+    <div>
+      <h2>Paso 3: Perfil Económico y Transaccional</h2>
+      <p>Declare la actividad económica y volumen financiero del cliente para calcular su nivel de riesgo.</p>
+    </div>
+    <!-- Badge de riesgo reactivo en tiempo real (DEF002) -->
+    <div style="text-align: right; min-width: 220px;">
+      <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">
+        Clasificación de Riesgo Realtime
+      </span>
+      <div id="riesgo-badge" style="display: inline-block; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text-secondary); transition: var(--transition);">
+        Calculando...
+      </div>
+    </div>
+  </div>
+
+  <form id="perfil-form">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+      <div class="form-group">
+        <label for="actividad">Actividad Profesional o Comercial</label>
+        <input type="text" id="actividad" class="input-control" required placeholder="Ej: Ingeniero de Software, Comercio Minorista">
+      </div>
+
+      <div class="form-group">
+        <label for="fuenteIngresos">Fuente u Origen de Fondos</label>
+        <input type="text" id="fuenteIngresos" class="input-control" required placeholder="Ej: Salario, Venta de Productos">
+      </div>
+
+      <div class="form-group">
+        <label for="ingresoMensual">Ingreso Mensual Estimado ($ USD)</label>
+        <input type="number" id="ingresoMensual" class="input-control" required min="0" placeholder="Ej: 3500">
+        <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+          Límite para DDS: $5,000.00
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="volumenTransacciones">Volumen Mensual de Transacciones ($ USD)</label>
+        <input type="number" id="volumenTransacciones" class="input-control" required min="0" placeholder="Ej: 6000">
+        <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+          Límite para DDS: $10,000.00
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+      <a href="/formularios/<%= id %>/contacto" class="btn btn-secondary">⬅️ Paso Anterior</a>
+      <button type="submit" class="btn btn-primary">Siguiente Paso ➡️</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const formId = '<%= id %>';
+  let esPep = false; // Guardar estado PEP del cliente
+
+  // Cargar datos preexistentes
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}`);
+      if (response.status === 200) {
+        const data = await response.json();
+        
+        // Obtener estado PEP del paso anterior
+        esPep = data.cliente ? !!data.cliente.esPep : false;
+
+        if (data.perfilEconomico) {
+          document.getElementById('actividad').value = data.perfilEconomico.actividad || '';
+          document.getElementById('fuenteIngresos').value = data.perfilEconomico.fuenteIngresos || '';
+          document.getElementById('ingresoMensual').value = data.perfilEconomico.ingresoMensual || '';
+          document.getElementById('volumenTransacciones').value = data.perfilEconomico.volumenTransacciones || '';
+        }
+        
+        // Realizar primer cálculo reactivo del badge
+        recalcularRiesgo();
+      }
+    } catch (err) {
+      console.error('Error al cargar datos del formulario:', err);
+    }
+  });
+
+  // Reactividad en tiempo real ante eventos input/change (DEF002)
+  const ingresoInput = document.getElementById('ingresoMensual');
+  const volumenInput = document.getElementById('volumenTransacciones');
+
+  ingresoInput.addEventListener('input', recalcularRiesgo);
+  volumenInput.addEventListener('input', recalcularRiesgo);
+
+  function recalcularRiesgo() {
+    const ingreso = parseFloat(ingresoInput.value) || 0;
+    const volumen = parseFloat(volumenInput.value) || 0;
+
+    let clasificacion = 'BAJO';
+    // Lógica del dominio SPEC-RN-01
+    if (esPep || ingreso > 5000 || volumen > 10000) {
+      clasificacion = 'NO_ELEGIBLE';
+    }
+
+    const badge = document.getElementById('riesgo-badge');
+    if (clasificacion === 'BAJO') {
+      badge.textContent = 'BAJO (DDS ELEGIBLE)';
+      badge.style.background = 'rgba(16, 185, 129, 0.15)';
+      badge.style.color = 'var(--color-success)';
+      badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+    } else {
+      let razon = '';
+      if (esPep) razon = 'PEP';
+      else if (ingreso > 5000 && volumen > 10000) razon = 'Ingreso y Vol.';
+      else if (ingreso > 5000) razon = 'Ingreso > $5k';
+      else razon = 'Volumen > $10k';
+
+      badge.textContent = `REFORZADO (${razon})`;
+      badge.style.background = 'rgba(239, 68, 68, 0.15)';
+      badge.style.color = 'var(--color-error)';
+      badge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+    }
+  }
+
+  // Envío del formulario
+  const form = document.getElementById('perfil-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      actividad: document.getElementById('actividad').value.trim(),
+      fuenteIngresos: document.getElementById('fuenteIngresos').value.trim(),
+      ingresoMensual: parseFloat(document.getElementById('ingresoMensual').value) || 0,
+      volumenTransacciones: parseFloat(document.getElementById('volumenTransacciones').value) || 0
+    };
+
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}/perfil-economico`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        window.location.href = `/formularios/${formId}/documentos`;
+      } else {
+        if (data.error && data.error.campos) {
+          const fieldErrors = data.error.campos;
+          const msg = Object.keys(fieldErrors)
+            .map(k => `${k}: ${fieldErrors[k].join(', ')}`)
+            .join(' | ');
+          showAlert(data.error.mensaje + ' (' + msg + ')', 'error');
+        } else {
+          showAlert(data.error?.mensaje || 'Error al guardar el perfil económico', 'error');
+        }
+      }
+    } catch (err) {
+      showAlert('Error de conexión con el servidor', 'error');
+    }
+  });
+</script>
+
+<%- include('layout_footer') %>
