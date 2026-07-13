@@ -20,8 +20,8 @@ Implementar la exportación del formulario completo a formato PDF de forma asín
 | Controlador PDF | `src/interfaces/controllers/pdf.controller.ts` | SPEC-API-08; Cola de trabajos asíncronos en memoria (`pdfJobs`) y dibujo visual de secciones. |
 | Controlador Búsqueda | `src/interfaces/controllers/busqueda.controller.ts` | SPEC-API-09; Búsqueda parametrizada segura en BD y descifrado + filtrado en memoria por nombre. |
 | Rutas registradas | `src/interfaces/routes/formularios.routes.ts` | Enrutamiento de `GET /`, `GET /:id/pdf` y `GET /:id/pdf/:jobId` protegidos por autenticación. |
-| Pruebas de integración PDF | `tests/integration/pdf.test.ts` | 4 tests para validar 404, 202 Accepted, polling de estado, descarga del binario y auditoría `EXPORTAR`. |
-| Pruebas de integración de Búsqueda | `tests/integration/busqueda.test.ts` | 6 tests para validar filtros por folio (exacto/parcial), nombre (parcial/descifrado), vacío y anti-inyección SQL. |
+| Pruebas de integración PDF | `tests/integration/pdf.test.ts` | 5 tests para validar 404, 202 Accepted, polling de estado, descarga del binario, generación de múltiples páginas (excediendo alto) y auditoría `EXPORTAR`. |
+| Pruebas de integración de Búsqueda | `tests/integration/busqueda.test.ts` | 6 tests para validar filtros por folio (exacto/parcial), nombre (parcial/descifrado), vacío y anti-inyección SQL. Incluye limpieza preventiva de BD. |
 
 ---
 
@@ -31,7 +31,7 @@ Implementar la exportación del formulario completo a formato PDF de forma asín
 |-----------|--------|-------|
 | RF-11 — Exportar a PDF | Completo | Implementado vía API REST asíncrona con polling (`SPEC-API-08`). |
 | RNF-02 — Tiempo de respuesta | Completo | Búsqueda y encolado de PDF responden en < 100ms. |
-| SPEC-API-08 — Contrato PDF | Completo | Retorna 202 y jobId; polling devuelve 200 `application/pdf`. |
+| SPEC-API-08 — Contrato PDF | Completo | Retorna 202 and jobId; polling devuelve 200 `application/pdf`. |
 | SPEC-API-09 — Contrato Búsqueda | Completo | Retorna array de formularios con nombre real descifrado. |
 | SPEC-SEC-03 — Consultas parametrizadas | Completo | SQL injection prevenido con Prisma placeholders (OWASP A03, DEF004). |
 | SPEC-SEC-04 — Auditoría | Completo | Registro de evento `EXPORTAR` con ID de oficial real. |
@@ -71,19 +71,22 @@ Implementar la exportación del formulario completo a formato PDF de forma asín
 
 | Métrica | Valor | Herramienta | Variación vs Sesión 6 |
 |---------|-------|-------------|----------------------|
-| KLOC `src/` | **1.150** (1150 líneas) | estimación/conteo | +0.210 (S6: 0.940) |
-| KLOC total (`src/` + `tests/`) | **2.986** (2986 líneas) | estimación/conteo | +0.446 (S6: 2.540) |
+| KLOC `src/` | **1.155** (1155 líneas) | estimación/conteo | +0.215 (S6: 0.940) |
+| KLOC total (`src/` + `tests/`) | **3.036** (3036 líneas) | estimación/conteo | +0.496 (S6: 2.540) |
 | Cobertura (estimación) | **~98%** | Vitest | Mantenida |
 | Complejidad ciclomática — `postExportarPDF()` | **V(G) = 6** | Conteo manual | Dentro del límite (≤ 10) |
 | Complejidad ciclomática — `getFormularios()` | **V(G) = 4** | Conteo manual | Dentro del límite (≤ 10) |
-| Tests totales | **133** | Vitest | +10 (S6: 123) |
-| Defectos detectados | 0 | - | - |
+| Tests totales | **134** | Vitest | +11 (S6: 123) |
+| Defectos detectados | 2 (resueltos en CI) | Vitest/Linter | +2 |
 
 ---
 
 ## 7. Defectos encontrados / resueltos
 
-Ninguno detectado en esta sesión.
+| ID | Descripción | Severidad | Estado | Acción |
+|----|-------------|-----------|--------|--------|
+| DEF-S7-01 | La compilación/linter en CI fallaba debido a que la rama del secreto de producción en `jwt.service.ts` no estaba cubierta, bajando la cobertura de ramas al 75.14% (límite 80%). | Alta | ✅ Resuelto | Se modularizó el control en una función testeable y se añadieron pruebas en `jwt.test.ts` simulando entorno de producción, logrando 100% de cobertura en ramas. |
+| DEF-S7-02 | Falla de colisión de clave única al recortar la precisión de `Date.now()` en folios de prueba (`TEST_FOLIO`) en `modelo.test.ts` y residuales en `busqueda.test.ts`. | Media | ✅ Resuelto | Se redefinió la generación de folios de prueba a un formato de longitud segura (16 caracteres) combinando últimos dígitos de timestamp y números aleatorios; además se añadió limpieza previa en `busqueda.test.ts`. |
 
 ---
 
@@ -94,6 +97,7 @@ Ninguno detectado en esta sesión.
   - 202 con jobId devuelto en exportación.
   - 404 para jobId inválido.
   - 200 con archivo `application/pdf` e inserción en logs de auditoría con la acción `EXPORTAR`.
+  - Generación de múltiples páginas (valida la división por alto de página `y < 50`).
 - `tests/integration/busqueda.test.ts`:
   - Búsqueda vacía devuelve todo.
   - Búsqueda por folio exacto y parcial.
@@ -108,6 +112,7 @@ Ninguno detectado en esta sesión.
 - `feat(exportacion): generacion asincrona de PDF con pdf-lib (RF-11, SPEC-API-08, DEF007)`
 - `feat(busqueda): busqueda parametrizada anti-inyeccion SQL con descifrado en memoria (SPEC-API-09, SPEC-SEC-03, DEF004)`
 - `test(busqueda-pdf): tests de integracion para reporte PDF y busqueda segura`
+- `fix(CI): resolucion de fallos de cobertura de ramas JWT y colisiones de folios de pruebas`
 
 ---
 

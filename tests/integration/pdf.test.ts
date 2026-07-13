@@ -125,4 +125,49 @@ describe('GET /api/formularios/:id/pdf (SPEC-API-08)', () => {
       expect(log?.usuarioId).toBe(oficialId);
     }
   });
+
+  it('genera múltiples páginas en PDF al exceder límite de alto', async () => {
+    const fMultipage = await prisma.formularioDDS.create({
+      data: {
+        proposito: 'Prueba de múltiples páginas',
+        estado: 'GUARDADO',
+        folio: `DDS-2026-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`,
+        oficialId,
+      },
+    });
+
+    const fMultipageId = fMultipage.id;
+
+    // Crear 45 documentos para forzar salto de página (y < 50)
+    const docsData = Array.from({ length: 45 }, (_, i) => ({
+      formularioId: fMultipageId,
+      tipo: `DOCUMENTO_TIPO_${i}`,
+      verificado: true,
+    }));
+    await prisma.documento.createMany({
+      data: docsData,
+    });
+
+    // 1. Iniciar exportación
+    const exportRes = await request(app)
+      .get(`/api/formularios/${fMultipageId}/pdf`)
+      .set('Authorization', `Bearer ${token}`);
+    const { jobId } = exportRes.body;
+
+    // 2. Esperar
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // 3. Consultar
+    const pollRes = await request(app)
+      .get(`/api/formularios/${fMultipageId}/pdf/${jobId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(pollRes.status).toBe(200);
+    expect(pollRes.header['content-type']).toBe('application/pdf');
+    expect(pollRes.body).toBeInstanceOf(Buffer);
+
+    // Limpieza
+    await prisma.documento.deleteMany({ where: { formularioId: fMultipageId } });
+    await prisma.formularioDDS.delete({ where: { id: fMultipageId } });
+  });
 });

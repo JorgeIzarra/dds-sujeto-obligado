@@ -9,7 +9,7 @@ const clienteRepo = new ClienteRepository(prisma);
 
 // Datos fijos para los tests de esta suite
 const TEST_EMAIL = `oficial_test_${Date.now()}@dds.test`;
-const TEST_FOLIO = `DDS-TEST-${Date.now()}`.slice(0, 20);
+const TEST_FOLIO = `DT-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 10000)}`;
 
 let oficialId: string;
 let formularioId: string;

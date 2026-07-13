@@ -17,6 +17,11 @@ let form2Id: string;
 beforeAll(async () => {
   app = createApp();
 
+  // Eliminar cualquier registro con folios de prueba para evitar colisiones
+  await prisma.formularioDDS.deleteMany({
+    where: { folio: { in: ['DDS-2026-111111', 'DDS-2026-222222'] } }
+  });
+
   // Crear oficial de prueba
   const oficial = await prisma.oficial.create({
     data: {

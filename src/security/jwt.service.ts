@@ -3,11 +3,13 @@ import { createHmac } from 'node:crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test_jwt_secret_key_placeholder_for_development_only';
 
-if (
-  process.env.NODE_ENV === 'production' &&
-  (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'test_jwt_secret_key_placeholder_for_development_only')
-) {
-  throw new Error('JWT_SECRET debe estar configurado en producción (SPEC-SEC-06)');
+function checkProductionSecret(): void {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'test_jwt_secret_key_placeholder_for_development_only')
+  ) {
+    throw new Error('JWT_SECRET debe estar configurado en producción (SPEC-SEC-06)');
+  }
 }
 
 function base64url(str: string | Buffer): string {
@@ -28,6 +30,7 @@ export interface JWTPayload {
 }
 
 export function signToken(payload: JWTPayload): string {
+  checkProductionSecret();
   const header = { alg: 'HS256', typ: 'JWT' };
   const headerStr = base64url(JSON.stringify(header));
   const payloadStr = base64url(JSON.stringify(payload));
@@ -38,6 +41,7 @@ export function signToken(payload: JWTPayload): string {
 }
 
 export function verifyToken(token: string): JWTPayload | null {
+  checkProductionSecret();
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   const [headerStr, payloadStr, signatureStr] = parts;
