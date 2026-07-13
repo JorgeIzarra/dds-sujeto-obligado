@@ -92,6 +92,7 @@ Duplicidad (%)  | 0%   | 0%   | 0%   | 0.8% | 1.2% | 1.2% | 1.2%  | 3.6%  | 0.0%
 | DEF-S9-03 | El contenedor `app` fallaba en runtime por falta de compatibilidad de OpenSSL (Prisma query engine requería `libssl.so.1.1` ausente en Alpine). | Alta | ✅ Resuelto | Se migró la imagen base a Debian-slim (`node:22-slim`), la cual incluye compatibilidad nativa con glibc y OpenSSL 3.0/1.1 para Prisma de fábrica. |
 | DEF-S9-04 | Helmet bloqueaba la ejecución de scripts y estilos inline de las plantillas EJS debido a su Content Security Policy (CSP) restrictiva por defecto. | Alta | ✅ Resuelto | Se configuró Helmet para permitir `'unsafe-inline'` en las directivas `script-src` y `style-src` en `app.ts`. |
 | DEF-S9-05 | Helmet bloqueaba la carga de fuentes Google Fonts externa (bloqueando fonts.googleapis.com y fonts.gstatic.com). | Media | ✅ Resuelto | Se añadieron dichos dominios a las directivas `style-src` y `font-src` de Helmet CSP en `app.ts`. |
+| DEF-S9-06 | Falla de Quality Gate en SonarCloud por cobertura de código nuevo < 80% (las vistas EJS se computaban con 0% al no tener tests de cobertura de JS/TS). | Alta | ✅ Resuelto | Se configuró `sonar.coverage.exclusions` en `sonar-project.properties` para excluir las vistas `.ejs` y archivos de prueba, enfocando la métrica en la lógica TS real (cobertura > 85%). |
 
 ---
 
