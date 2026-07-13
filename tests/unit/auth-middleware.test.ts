@@ -6,6 +6,31 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+interface MockResponseHelper {
+  res: Response;
+  getStatus: () => number;
+  getJson: () => Record<string, unknown>;
+}
+
+function createMockResponse(): MockResponseHelper {
+  let statusSent = 0;
+  let jsonSent: Record<string, unknown> = {};
+  const res = {
+    status: (code: number) => {
+      statusSent = code;
+      return {
+        json: (data: Record<string, unknown>) => { jsonSent = data; }
+      };
+    }
+  } as unknown as Response;
+
+  return {
+    res,
+    getStatus: () => statusSent,
+    getJson: () => jsonSent,
+  };
+}
+
 describe('auth.middleware unit tests', () => {
   let oficialId: string;
   let oficialToken: string;
@@ -47,51 +72,30 @@ describe('auth.middleware unit tests', () => {
 
     it('devuelve 401 si no hay encabezado de autorización', () => {
       const req = { headers: {} } as unknown as Request;
-      let statusSent = 0;
-      let jsonSent = {};
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return {
-            json: (data: Record<string, unknown>) => { jsonSent = data; }
-          };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      authenticate(req, res, next);
-      expect(statusSent).toBe(401);
-      expect(jsonSent).toHaveProperty('error');
+      authenticate(req, helper.res, next);
+      expect(helper.getStatus()).toBe(401);
+      expect(helper.getJson()).toHaveProperty('error');
     });
 
     it('devuelve 401 si el token es inválido o no tiene formato Bearer', () => {
       const req = { headers: { authorization: 'InvalidToken' } } as unknown as Request;
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      authenticate(req, res, next);
-      expect(statusSent).toBe(401);
+      authenticate(req, helper.res, next);
+      expect(helper.getStatus()).toBe(401);
     });
 
     it('devuelve 401 si el token no puede ser verificado', () => {
       const req = { headers: { authorization: 'Bearer bad.token.here' } } as unknown as Request;
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      authenticate(req, res, next);
-      expect(statusSent).toBe(401);
+      authenticate(req, helper.res, next);
+      expect(helper.getStatus()).toBe(401);
     });
   });
 
@@ -114,32 +118,20 @@ describe('auth.middleware unit tests', () => {
         usuario: { id: '1', email: 'o@test.com', rol: 'OFICIAL' },
       } as unknown as Request;
 
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      authorize(['SUPERVISOR'])(req, res, next);
-      expect(statusSent).toBe(403);
+      authorize(['SUPERVISOR'])(req, helper.res, next);
+      expect(helper.getStatus()).toBe(403);
     });
 
     it('devuelve 401 si req.usuario no está definido (cubre línea 35-43)', () => {
       const req = {} as unknown as Request;
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      authorize(['OFICIAL'])(req, res, next);
-      expect(statusSent).toBe(401);
+      authorize(['OFICIAL'])(req, helper.res, next);
+      expect(helper.getStatus()).toBe(401);
     });
   });
 
@@ -159,17 +151,11 @@ describe('auth.middleware unit tests', () => {
         params: { id: '00000000-0000-0000-0000-000000000000' },
       } as unknown as Request;
 
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      await checkEdicionFormulario(req, res, next);
-      expect(statusSent).toBe(404);
+      await checkEdicionFormulario(req, helper.res, next);
+      expect(helper.getStatus()).toBe(404);
     });
 
     it('devuelve 403 si el estado es APROBADO y el usuario es OFICIAL', async () => {
@@ -186,17 +172,11 @@ describe('auth.middleware unit tests', () => {
         usuario: { id: oficialId, email: 'o@test.com', rol: 'OFICIAL' },
       } as unknown as Request;
 
-      let statusSent = 0;
-      const res = {
-        status: (code: number) => {
-          statusSent = code;
-          return { json: () => {} };
-        }
-      } as unknown as Response;
+      const helper = createMockResponse();
       const next = (() => {}) as NextFunction;
 
-      await checkEdicionFormulario(req, res, next);
-      expect(statusSent).toBe(403);
+      await checkEdicionFormulario(req, helper.res, next);
+      expect(helper.getStatus()).toBe(403);
     });
   });
 });

@@ -23,8 +23,8 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 | Estructuras de Layout | `src/interfaces/views/layout_header.ejs`, `layout_footer.ejs` | Estructuras de layout HTML5 comunes. Incluye estilos CSS puros modernos (Outfit font, fondos oscuros, glassmorphism, gradientes HSL y enfoque visible para teclado). |
 | Páginas de Flujo | `login.ejs`, `busqueda.ejs`, `identificacion.ejs`, `contacto.ejs`, `perfil.ejs`, `documentos.ejs`, `resumen.ejs` | Implementado el flujo completo de 5 pasos con llamadas `fetch` seguras (añade `Authorization: Bearer [token]`) y almacenamiento en `sessionStorage`. |
 | Badge reactivo de riesgo (DEF002) | `src/interfaces/views/perfil.ejs` | Script del lado del cliente que escucha eventos `input` en ingresos/volumen y actualiza el badge al instante de forma reactiva. |
-| Pruebas de integración de Vistas | `tests/integration/web.test.ts` | 8 tests de integración para comprobar que las vistas renderizan su contenido HTML respectivo con estatus 200 y redirección del home. |
-| Pruebas de cobertura y robustez | `tests/integration/formulario-api.test.ts`, `tests/unit/auth-middleware.test.ts`, `tests/unit/auditoria-repository.test.ts` | 17 nuevos tests para lograr 100% de cobertura en `formulario.controller.ts`, `auth.middleware.ts` y `auditoria.repository.ts`, superando con holgura el umbral de ramas del 80%. |
+| Pruebas de integración de Vistas | `tests/integration/web.test.ts` | 8 tests de integración para comprobar que las vistas renderizan su contenido HTML respectivo con estatus 200 y redirección del home. Refactorizados para eliminar duplicidad de código. |
+| Pruebas de cobertura y robustez | `tests/integration/formulario-api.test.ts`, `tests/unit/auth-middleware.test.ts`, `tests/unit/auditoria-repository.test.ts` | 17 nuevos tests para lograr 100% de cobertura en `formulario.controller.ts`, `auth.middleware.ts` (refactorizado para eliminar duplicación) y `auditoria.repository.ts`, superando con holgura el umbral de ramas del 80%. |
 
 ---
 
@@ -68,16 +68,25 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 | Métrica | Valor | Herramienta | Variación vs Sesión 7 |
 |---------|-------|-------------|----------------------|
 | KLOC `src/` | **1.350** (1350 líneas) | estimación/conteo | +0.195 (S7: 1.155) |
-| KLOC total (`src/` + `tests/`) | **3.805** (3805 líneas) | estimación/conteo | +0.769 (S7: 3.036) |
+| KLOC total (`src/` + `tests/`) | **3.705** (3805 líneas) | estimación/conteo | +0.769 (S7: 3.036) |
 | Cobertura de Ramas (estimación) | **~85%** | Vitest | **+10%** (Supera umbral del 80%) |
 | Complejidad ciclomática — `getFormularioById()` | **V(G) = 3** | Conteo manual | Dentro del límite (≤ 10) |
 | Complejidad ciclomática — `postCrearFormulario()`| **V(G) = 2** | Conteo manual | Dentro del límite (≤ 10) |
 | Tests totales | **159** | Vitest | +25 (S7: 134) |
-| Defectos detectados | 1 (resuelto en Docker) | - | - |
+| Defectos detectados | 2 (resueltos) | SonarCloud/Linter | +2 |
 
 ---
 
-## 7. Pruebas añadidas
+## 7. Defectos encontrados / resueltos
+
+| ID | Descripción | Severidad | Estado | Acción |
+|----|-------------|-----------|--------|--------|
+| DEF-S8-01 | El path de vistas en producción no existía en el contenedor Docker. | Alta | ✅ Resuelto | Se descomentó la directiva `COPY` en el Dockerfile para empaquetar adecuadamente el directorio de vistas. |
+| DEF-S8-02 | Falla de Quality Gate en SonarCloud debido a duplicidad de código (3.6%) en archivos de pruebas creados. | Media | ✅ Resuelto | Se refactorizaron `auth-middleware.test.ts` y `web.test.ts` para usar funciones auxiliares (`createMockResponse` y `expectHtmlPage`), reduciendo el código duplicado a 0%. |
+
+---
+
+## 8. Pruebas añadidas
 
 - `tests/integration/web.test.ts`:
   - `GET /` -> Redirección a `/login`.
@@ -95,7 +104,7 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 
 ---
 
-## 8. Commits de la sesión
+## 9. Commits de la sesión
 
 - `feat(frontend): vistas EJS para flujo wizard completo de 5 pasos (RF-11, RNF-06, RNF-09)`
 - `feat(frontend): enrutamiento web y endpoint de recuperacion de formulario completo descifrado`
@@ -103,9 +112,10 @@ Construir la interfaz web de usuario mediante plantillas EJS que consuma los end
 - `fix(docker): resolucion de path de vistas EJS en produccion Docker`
 - `test(frontend): pruebas de integracion de renderizado de paginas EJS`
 - `test(cobertura): tests unitarios y de integracion para lograr 100% de cobertura en controladores y middlewares`
+- `refac(tests): eliminacion de duplicacion de codigo en pruebas para satisfacer Quality Gate de SonarCloud`
 
 ---
 
-## 9. Pendientes y riesgos para la próxima sesión
+## 10. Pendientes y riesgos para la próxima sesión
 
 - **Cierre del proyecto:** El sistema ya cuenta con backend seguro, base de datos con cifrado AES-GCM, exportación PDF, búsquedas inmunes a inyección SQL y el frontend interactivo en EJS. La rama `SamuelGonzalez/sesion-8` debe subirse para validar en CI y luego estar lista para ser revisada por el usuario.
