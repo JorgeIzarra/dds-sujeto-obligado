@@ -30,7 +30,7 @@ describe('AuditoriaRepository unit tests', () => {
     await auditoriaRepo.registrarEvento({
       accion: 'TEST',
       entidad: 'test_entidad',
-      entidadId: 'some-id-123',
+      entidadId: '550e8400-e29b-41d4-a716-446655440000',
       usuarioId: oficialId,
       detalle: { info: 'test' },
     });
@@ -40,7 +40,7 @@ describe('AuditoriaRepository unit tests', () => {
     });
 
     expect(log).not.toBeNull();
-    expect(log?.entidadId).toBe('some-id-123');
+    expect(log?.entidadId).toBe('550e8400-e29b-41d4-a716-446655440000');
   });
 
   it('registra evento sin entidadId (cubre línea 21 ?? null)', async () => {

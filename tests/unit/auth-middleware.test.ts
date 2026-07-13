@@ -53,7 +53,7 @@ describe('auth.middleware unit tests', () => {
         status: (code: number) => {
           statusSent = code;
           return {
-            json: (data: any) => { jsonSent = data; }
+            json: (data: Record<string, unknown>) => { jsonSent = data; }
           };
         }
       } as unknown as Response;
