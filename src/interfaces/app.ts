@@ -12,15 +12,15 @@ export function createApp(): Application {
   app.use(helmet());
 
   // Forzar HTTPS en producción (RNF-04)
-  if (process.env.NODE_ENV === 'production') {
-    app.use((req: Request, res: Response, next): void => {
+  app.use((req: Request, res: Response, next): void => {
+    if (process.env.NODE_ENV === 'production') {
       if (req.headers['x-forwarded-proto'] !== 'https') {
         res.redirect(`https://${req.headers.host || 'localhost'}${req.url}`);
         return;
       }
-      next();
-    });
-  }
+    }
+    next();
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
