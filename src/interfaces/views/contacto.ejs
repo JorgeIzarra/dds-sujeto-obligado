@@ -1,0 +1,109 @@
+<%- include('layout_header') %>
+
+<div class="glass-card" style="max-width: 800px; margin: 2rem auto;">
+  <!-- Progress Wizard -->
+  <div class="wizard-steps">
+    <a href="/formularios/<%= id %>/identificacion" class="wizard-step completed">
+      <span class="step-number">1</span> Identificación
+    </a>
+    <a href="/formularios/<%= id %>/contacto" class="wizard-step active">
+      <span class="step-number">2</span> Contacto
+    </a>
+    <a href="/formularios/<%= id %>/perfil" class="wizard-step">
+      <span class="step-number">3</span> Perfil
+    </a>
+    <a href="/formularios/<%= id %>/documentos" class="wizard-step">
+      <span class="step-number">4</span> Documentos
+    </a>
+    <a href="/formularios/<%= id %>/resumen" class="wizard-step">
+      <span class="step-number">5</span> Resumen
+    </a>
+  </div>
+
+  <h2>Paso 2: Datos de Contacto del Cliente</h2>
+  <p>Registre la dirección física, teléfono y correo electrónico de contacto para la debida diligencia.</p>
+
+  <form id="contacto-form">
+    <div class="form-group">
+      <label for="direccion">Dirección Residencial / Comercial Completa</label>
+      <input type="text" id="direccion" class="input-control" required placeholder="Ej: Vía España, Edificio Torre del Sol, Piso 4, Ciudad de Panamá">
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+      <div class="form-group">
+        <label for="telefono">Número Telefónico</label>
+        <input type="tel" id="telefono" class="input-control" required placeholder="Ej: +507 6666-6666">
+      </div>
+
+      <div class="form-group">
+        <label for="correo">Correo Electrónico</label>
+        <input type="email" id="correo" class="input-control" required placeholder="Ej: juan.perez@email.com">
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+      <a href="/formularios/<%= id %>/identificacion" class="btn btn-secondary">⬅️ Paso Anterior</a>
+      <button type="submit" class="btn btn-primary">Siguiente Paso ➡️</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const formId = '<%= id %>';
+
+  // Cargar datos preexistentes
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}`);
+      if (response.status === 200) {
+        const data = await response.json();
+        if (data.datosContacto) {
+          document.getElementById('direccion').value = data.datosContacto.direccion || '';
+          document.getElementById('telefono').value = data.datosContacto.telefono || '';
+          document.getElementById('correo').value = data.datosContacto.correo || '';
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar datos del formulario:', err);
+    }
+  });
+
+  // Envío del formulario
+  const form = document.getElementById('contacto-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      direccion: document.getElementById('direccion').value.trim(),
+      telefono: document.getElementById('telefono').value.trim(),
+      correo: document.getElementById('correo').value.trim()
+    };
+
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}/contacto`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        window.location.href = `/formularios/${formId}/perfil`;
+      } else {
+        if (data.error && data.error.campos) {
+          const fieldErrors = data.error.campos;
+          const msg = Object.keys(fieldErrors)
+            .map(k => `${k}: ${fieldErrors[k].join(', ')}`)
+            .join(' | ');
+          showAlert(data.error.mensaje + ' (' + msg + ')', 'error');
+        } else {
+          showAlert(data.error?.mensaje || 'Error al guardar los datos de contacto', 'error');
+        }
+      }
+    } catch (err) {
+      showAlert('Error de conexión con el servidor', 'error');
+    }
+  });
+</script>
+
+<%- include('layout_footer') %>

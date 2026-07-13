@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema DDS — Ley 23 SSNF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: hsl(222, 47%, 11%);
+      --bg-secondary: hsl(217, 33%, 17%);
+      --text-primary: hsl(210, 40%, 98%);
+      --text-secondary: hsl(215, 20%, 65%);
+      --color-primary: hsl(263, 70%, 50%);
+      --color-primary-hover: hsl(263, 70%, 60%);
+      --color-success: hsl(142, 72%, 40%);
+      --color-warning: hsl(38, 92%, 50%);
+      --color-error: hsl(0, 84%, 60%);
+      --glass-bg: rgba(30, 41, 59, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-glow: rgba(99, 102, 241, 0.15);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(263, 40%, 15%, 0.4) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(220, 30%, 10%, 1) 0, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+    }
+
+    /* Accesibilidad: Ocultar texto para lectores de pantalla */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* Enfoque accesible */
+    *:focus-visible {
+      outline: 2px solid var(--color-primary-hover);
+      outline-offset: 4px;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .logo-title {
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: -2px;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-left: 1.5rem;
+      border-left: 1px solid var(--glass-border);
+    }
+
+    .user-role-badge {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: var(--color-error);
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--color-error);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    /* Estilos comunes para layouts y contenedores */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 1.5rem;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .input-control {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+
+    .input-control:focus {
+      outline: none;
+      border-color: var(--color-primary-hover);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .checkbox-control {
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 4px;
+      accent-color: var(--color-primary);
+      cursor: pointer;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+      color: var(--text-primary);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--color-error);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--color-error);
+    }
+
+    /* Alertas y notificaciones */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid transparent;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.2);
+      color: var(--color-success);
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.2);
+      color: var(--color-warning);
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: var(--color-error);
+    }
+
+    /* Pasos de Formulario (Wizard) */
+    .wizard-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .wizard-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .wizard-step.active {
+      color: var(--text-primary);
+    }
+
+    .wizard-step.completed {
+      color: var(--color-success);
+    }
+
+    .step-number {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .wizard-step.active .step-number {
+      background: var(--color-primary);
+      border-color: var(--color-primary-hover);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .wizard-step.completed .step-number {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--color-success);
+      color: var(--color-success);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <div class="logo-container">
+        <div class="logo-badge" aria-hidden="true">DDS</div>
+        <div>
+          <a href="/formularios" class="logo-title">Debida Diligencia</a>
+          <span class="logo-subtitle">Sujeto Obligado · Ley 23</span>
+        </div>
+      </div>
+      <nav id="main-nav" style="display: none;">
+        <ul>
+          <li><a href="/formularios" id="nav-list">Buscador</a></li>
+          <li class="user-profile">
+            <span class="user-role-badge" id="user-role-badge">OFICIAL</span>
+            <button class="logout-btn" id="logout-button">Salir</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div id="alert-container"></div>

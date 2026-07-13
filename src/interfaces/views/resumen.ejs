@@ -1,0 +1,292 @@
+<%- include('layout_header') %>
+
+<div class="glass-card" style="max-width: 900px; margin: 2rem auto;">
+  <!-- Progress Wizard -->
+  <div class="wizard-steps" id="wizard-container">
+    <a href="/formularios/<%= id %>/identificacion" class="wizard-step completed">
+      <span class="step-number">1</span> Identificación
+    </a>
+    <a href="/formularios/<%= id %>/contacto" class="wizard-step completed">
+      <span class="step-number">2</span> Contacto
+    </a>
+    <a href="/formularios/<%= id %>/perfil" class="wizard-step completed">
+      <span class="step-number">3</span> Perfil
+    </a>
+    <a href="/formularios/<%= id %>/documentos" class="wizard-step completed">
+      <span class="step-number">4</span> Documentos
+    </a>
+    <a href="/formularios/<%= id %>/resumen" class="wizard-step active">
+      <span class="step-number">5</span> Resumen
+    </a>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Resumen e Indicadores del Formulario</h2>
+    <div id="folio-badge-container"></div>
+  </div>
+
+  <div id="resumen-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Identificación del Cliente -->
+    <div style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary-hover);">1. Identificación</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600; width: 40%;">Nombre:</td><td id="res-nombre" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Tipo Cliente:</td><td id="res-tipoCliente" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Documento:</td><td id="res-doc" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Nacionalidad:</td><td id="res-nacionalidad" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Nacimiento:</td><td id="res-fechaNac" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr><td style="padding: 0.5rem 0; font-weight: 600;">Persona PEP:</td><td id="res-pep" style="padding: 0.5rem 0;">—</td></tr>
+      </table>
+    </div>
+
+    <!-- Datos de Contacto -->
+    <div style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary-hover);">2. Contacto</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600; width: 30%;">Dirección:</td><td id="res-direccion" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Teléfono:</td><td id="res-telefono" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr><td style="padding: 0.5rem 0; font-weight: 600;">Correo:</td><td id="res-correo" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+      </table>
+    </div>
+
+    <!-- Perfil Económico -->
+    <div style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary-hover);">3. Perfil Económico</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600; width: 45%;">Actividad:</td><td id="res-actividad" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Origen de Fondos:</td><td id="res-fuente" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Ingreso Mensual:</td><td id="res-ingreso" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 0.5rem 0; font-weight: 600;">Volumen Transaccional:</td><td id="res-volumen" style="padding: 0.5rem 0; color: var(--text-secondary);">—</td></tr>
+        <tr><td style="padding: 0.5rem 0; font-weight: 600;">Clasificación Riesgo:</td><td id="res-riesgo" style="padding: 0.5rem 0;">—</td></tr>
+      </table>
+    </div>
+
+    <!-- Lista de Documentos -->
+    <div style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--color-primary-hover);">4. Documentos Cargados</h3>
+      <div id="res-docs-list" style="font-size: 0.9rem; max-height: 180px; overflow-y: auto;">
+        Cargando documentos...
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+    <a href="/formularios" class="btn btn-secondary">🚪 Volver a Bandeja</a>
+    
+    <div style="display: flex; gap: 1rem;" id="actions-container">
+      <a href="/formularios/<%= id %>/documentos" class="btn btn-secondary" id="btn-atras">⬅️ Paso Anterior</a>
+      <button id="btn-guardar" class="btn btn-primary">💾 Aprobar y Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const formId = '<%= id %>';
+  let estadoFormulario = 'BORRADOR';
+
+  // Cargar todos los datos
+  document.addEventListener('DOMContentLoaded', async () => {
+    await cargarDatosResumen();
+  });
+
+  async function cargarDatosResumen() {
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}`);
+      if (response.status === 200) {
+        const data = await response.json();
+        
+        estadoFormulario = data.estado;
+
+        // Renderizado de Folio Badge
+        const folioContainer = document.getElementById('folio-badge-container');
+        if (data.folio) {
+          folioContainer.innerHTML = `
+            <span style="background: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-family: monospace; font-size: 1.05rem;">
+              FOLIO: ${data.folio}
+            </span>
+          `;
+          // Ocultar wizard de pasos si ya está guardado
+          const wizard = document.getElementById('wizard-container');
+          if (wizard) wizard.style.display = 'none';
+        } else {
+          folioContainer.innerHTML = `
+            <span style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem;">
+              ESTADO: BORRADOR
+            </span>
+          `;
+        }
+
+        // 1. Identificación
+        if (data.cliente) {
+          document.getElementById('res-nombre').textContent = data.cliente.nombre;
+          document.getElementById('res-tipoCliente').textContent = data.cliente.tipoCliente;
+          document.getElementById('res-doc').textContent = `${data.cliente.tipoDocumento} - ${data.cliente.numDocumento}`;
+          document.getElementById('res-nacionalidad').textContent = data.cliente.nacionalidad;
+          document.getElementById('res-fechaNac').textContent = data.cliente.fechaNacimiento || '—';
+          
+          const pepBadge = document.getElementById('res-pep');
+          if (data.cliente.esPep) {
+            pepBadge.innerHTML = `<span style="background: rgba(239, 68, 68, 0.15); color: var(--color-error); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">SÍ (PEP)</span>`;
+          } else {
+            pepBadge.innerHTML = `<span style="background: rgba(16, 185, 129, 0.15); color: var(--color-success); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">NO</span>`;
+          }
+        }
+
+        // 2. Contacto
+        if (data.datosContacto) {
+          document.getElementById('res-direccion').textContent = data.datosContacto.direccion;
+          document.getElementById('res-telefono').textContent = data.datosContacto.telefono;
+          document.getElementById('res-correo').textContent = data.datosContacto.correo;
+        }
+
+        // 3. Perfil Económico
+        if (data.perfilEconomico) {
+          document.getElementById('res-actividad').textContent = data.perfilEconomico.actividad;
+          document.getElementById('res-fuente').textContent = data.perfilEconomico.fuenteIngresos;
+          document.getElementById('res-ingreso').textContent = `$${parseFloat(data.perfilEconomico.ingresoMensual).toLocaleString()}`;
+          document.getElementById('res-volumen').textContent = `$${parseFloat(data.perfilEconomico.volumenTransacciones).toLocaleString()}`;
+        }
+
+        const riesgoCell = document.getElementById('res-riesgo');
+        if (data.clasificacionRiesgo) {
+          const isBajo = data.clasificacionRiesgo === 'BAJO';
+          riesgoCell.innerHTML = isBajo
+            ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--color-success); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600;">🟩 BAJO</span>`
+            : `<span style="background: rgba(239, 68, 68, 0.15); color: var(--color-error); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600;">🚨 REFORZADA / NO ELEGIBLE</span>`;
+        } else {
+          riesgoCell.innerHTML = `<span style="color: var(--text-secondary); font-style: italic;">Por clasificar</span>`;
+        }
+
+        // 4. Documentos
+        const docsList = document.getElementById('res-docs-list');
+        docsList.innerHTML = '';
+        if (!data.documentos || data.documentos.length === 0) {
+          docsList.innerHTML = `<span style="color: var(--text-secondary); font-style: italic;">Sin documentos agregados</span>`;
+        } else {
+          const ul = document.createElement('ul');
+          ul.style.listStyle = 'none';
+          ul.style.display = 'flex';
+          ul.style.flexDirection = 'column';
+          ul.style.gap = '0.5rem';
+
+          data.documentos.forEach(doc => {
+            const li = document.createElement('li');
+            li.style.background = 'rgba(255, 255, 255, 0.01)';
+            li.style.border = '1px solid var(--glass-border)';
+            li.style.padding = '0.5rem 0.75rem';
+            li.style.borderRadius = '6px';
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.alignItems = 'center';
+
+            const statusColor = doc.verificado ? 'var(--color-success)' : 'var(--color-warning)';
+            const statusText = doc.verificado ? 'Verificado' : 'Pendiente';
+
+            li.innerHTML = `
+              <div>
+                <span style="font-weight: 600;">${doc.tipo}</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">${doc.baseLegal || ''}</div>
+              </div>
+              <span style="font-size: 0.8rem; font-weight: 600; color: ${statusColor};">${statusText}</span>
+            `;
+            ul.appendChild(li);
+          });
+          docsList.appendChild(ul);
+        }
+
+        // Actualizar Botones de Acciones
+        actualizarBotones(data.estado);
+      }
+    } catch (err) {
+      showAlert('Error de conexión al cargar resumen', 'error');
+    }
+  }
+
+  function actualizarBotones(estado) {
+    const container = document.getElementById('actions-container');
+    if (estado === 'GUARDADO') {
+      container.innerHTML = `
+        <button id="btn-pdf" class="btn btn-primary" style="background: linear-gradient(135deg, hsl(200, 70%, 50%), hsl(200, 70%, 60%)); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);">
+          📥 Descargar PDF Completo
+        </button>
+      `;
+
+      // Escuchar descarga
+      document.getElementById('btn-pdf').addEventListener('click', descargarReportePDF);
+    } else {
+      container.innerHTML = `
+        <a href="/formularios/${formId}/documentos" class="btn btn-secondary" id="btn-atras">⬅️ Paso Anterior</a>
+        <button id="btn-guardar" class="btn btn-primary">💾 Aprobar y Guardar</button>
+      `;
+
+      // Escuchar guardar
+      document.getElementById('btn-guardar').addEventListener('click', guardarFormularioDDS);
+    }
+  }
+
+  async function guardarFormularioDDS() {
+    try {
+      showAlert('Procesando firma y asignación de Folio...', 'warning');
+      const response = await apiFetch(`/api/formularios/${formId}/guardar`, {
+        method: 'POST'
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        showAlert('Formulario guardado y aprobado exitosamente', 'success');
+        await cargarDatosResumen();
+      } else {
+        // Mostrar alerta regulativa (ej. PEP, DEF006 o falta de documento verificado)
+        showAlert(data.error?.mensaje || 'Error al aprobar el formulario', 'error');
+      }
+    } catch (err) {
+      showAlert('Error al procesar la aprobación del formulario', 'error');
+    }
+  }
+
+  async function descargarReportePDF() {
+    showAlert('Generando PDF en segundo plano (Job)...', 'warning');
+    const btnPdf = document.getElementById('btn-pdf');
+    btnPdf.disabled = true;
+    btnPdf.textContent = '⏳ Generando...';
+
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}/pdf`);
+      const { jobId } = await response.json();
+
+      // Polling asíncrono (DEF007)
+      const pollInterval = setInterval(async () => {
+        const pollRes = await apiFetch(`/api/formularios/${formId}/pdf/${jobId}`);
+        
+        if (pollRes.status === 200) {
+          clearInterval(pollInterval);
+          
+          const blob = await pollRes.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = `Reporte-DDS-${formId}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          
+          showAlert('Reporte PDF descargado con éxito', 'success');
+          btnPdf.disabled = false;
+          btnPdf.textContent = '📥 Descargar PDF Completo';
+        } else if (pollRes.status === 500) {
+          clearInterval(pollInterval);
+          showAlert('Error interno en la generación del PDF', 'error');
+          btnPdf.disabled = false;
+          btnPdf.textContent = '📥 Descargar PDF Completo';
+        }
+      }, 500);
+    } catch (err) {
+      showAlert('Error al contactar con la exportadora de PDF', 'error');
+      btnPdf.disabled = false;
+      btnPdf.textContent = '📥 Descargar PDF Completo';
+    }
+  }
+</script>
+
+<%- include('layout_footer') %>

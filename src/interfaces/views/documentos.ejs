@@ -1,0 +1,165 @@
+<%- include('layout_header') %>
+
+<div class="glass-card" style="max-width: 800px; margin: 2rem auto;">
+  <!-- Progress Wizard -->
+  <div class="wizard-steps">
+    <a href="/formularios/<%= id %>/identificacion" class="wizard-step completed">
+      <span class="step-number">1</span> Identificación
+    </a>
+    <a href="/formularios/<%= id %>/contacto" class="wizard-step completed">
+      <span class="step-number">2</span> Contacto
+    </a>
+    <a href="/formularios/<%= id %>/perfil" class="wizard-step completed">
+      <span class="step-number">3</span> Perfil
+    </a>
+    <a href="/formularios/<%= id %>/documentos" class="wizard-step active">
+      <span class="step-number">4</span> Documentos
+    </a>
+    <a href="/formularios/<%= id %>/resumen" class="wizard-step">
+      <span class="step-number">5</span> Resumen
+    </a>
+  </div>
+
+  <h2>Paso 4: Checklist de Documentos de Soporte</h2>
+  <p>De acuerdo a la Ley 23 y SPEC-BHV-06, es obligatorio verificar al menos el documento de identidad del cliente antes de aprobar el formulario.</p>
+
+  <!-- Formulario para agregar documento -->
+  <form id="documento-form" style="background: rgba(15, 23, 42, 0.3); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 2rem;">
+    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Agregar Documento de Soporte</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+      <div class="form-group">
+        <label for="tipo">Tipo de Documento</label>
+        <select id="tipo" class="input-control" required style="background-color: rgb(15 23 42);">
+          <option value="IDENTIFICACION">Documento de Identidad (Cédula/Pasaporte)</option>
+          <option value="INGRESO">Evidencia de Ingresos (Ficha CSS, Carta de Trabajo, Declaración de Renta)</option>
+          <option value="COMPROBANTE_DOMICILIO">Comprobante de Domicilio (Recibo de Luz/Agua/Teléfono)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="baseLegal">Base Legal Aplicable</label>
+        <input type="text" id="baseLegal" class="input-control" placeholder="Ej: Art. 26 Ley 23" value="Ley 23 de 2015">
+      </div>
+    </div>
+
+    <div class="form-group checkbox-group" style="margin-bottom: 1rem;">
+      <input type="checkbox" id="verificado" class="checkbox-control" checked>
+      <label for="verificado" style="margin: 0; cursor: pointer; color: var(--text-primary);">Documento Verificado por el Oficial</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Agregar Documento</button>
+  </form>
+
+  <!-- Lista de documentos agregados -->
+  <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Documentos Registrados en este Formulario</h3>
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
+          <th style="padding: 0.75rem;">Tipo</th>
+          <th style="padding: 0.75rem;">Base Legal</th>
+          <th style="padding: 0.75rem;">Estado de Verificación</th>
+          <th style="padding: 0.75rem;">Fecha Registro</th>
+        </tr>
+      </thead>
+      <tbody id="documentos-body">
+        <tr>
+          <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Cargando documentos...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+    <a href="/formularios/<%= id %>/perfil" class="btn btn-secondary">⬅️ Paso Anterior</a>
+    <a href="/formularios/<%= id %>/resumen" class="btn btn-primary">Siguiente Paso ➡️</a>
+  </div>
+</div>
+
+<script>
+  const formId = '<%= id %>';
+
+  // Cargar documentos al inicio
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarDocumentos();
+  });
+
+  async function cargarDocumentos() {
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}`);
+      if (response.status === 200) {
+        const data = await response.json();
+        
+        const tbody = document.getElementById('documentos-body');
+        tbody.innerHTML = '';
+
+        if (!data.documentos || data.documentos.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary); font-style: italic;">
+                No se han registrado documentos aún. El formulario requiere al menos un documento de tipo IDENTIFICACION verificado para poder ser aprobado.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        data.documentos.forEach(doc => {
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--glass-border)';
+
+          const verificadoBadge = doc.verificado
+            ? `<span style="color: var(--color-success); font-weight: 600;">✅ VERIFICADO</span>`
+            : `<span style="color: var(--color-warning); font-weight: 600;">⏳ PENDIENTE</span>`;
+
+          const fechaStr = new Date(doc.fechaRecepcion).toISOString().split('T')[0];
+
+          tr.innerHTML = `
+            <td style="padding: 0.75rem; font-weight: 500;">${doc.tipo}</td>
+            <td style="padding: 0.75rem; color: var(--text-secondary);">${doc.baseLegal || '—'}</td>
+            <td style="padding: 0.75rem;">${verificadoBadge}</td>
+            <td style="padding: 0.75rem; color: var(--text-secondary);">${fechaStr}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    } catch (err) {
+      showAlert('Error al cargar la lista de documentos', 'error');
+    }
+  }
+
+  // Agregar nuevo documento
+  const docForm = document.getElementById('documento-form');
+  docForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      tipo: document.getElementById('tipo').value,
+      baseLegal: document.getElementById('baseLegal').value.trim() || undefined,
+      verificado: document.getElementById('verificado').checked
+    };
+
+    try {
+      const response = await apiFetch(`/api/formularios/${formId}/documentos`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.status === 201) {
+        showAlert('Documento agregado con éxito', 'success');
+        // Resetear form
+        document.getElementById('baseLegal').value = 'Ley 23 de 2015';
+        document.getElementById('verificado').checked = true;
+        // Recargar tabla
+        cargarDocumentos();
+      } else {
+        const data = await response.json();
+        showAlert(data.error?.mensaje || 'Error al agregar documento', 'error');
+      }
+    } catch (err) {
+      showAlert('Error de conexión con el servidor', 'error');
+    }
+  });
+</script>
+
+<%- include('layout_footer') %>

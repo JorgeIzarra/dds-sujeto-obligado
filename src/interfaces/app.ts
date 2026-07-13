@@ -3,6 +3,7 @@ import path from 'path';
 import helmet from 'helmet';
 import { formulariosRouter } from './routes/formularios.routes';
 import { authRouter } from './routes/auth.routes';
+import { webRouter } from './routes/web.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -23,6 +24,7 @@ export function createApp(): Application {
   // Rutas
   app.use('/api/auth', authRouter);
   app.use('/api/formularios', formulariosRouter);
+  app.use('/', webRouter);
 
   return app;
 }

@@ -1,0 +1,194 @@
+<%- include('layout_header') %>
+
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="margin: 0;">Bandeja de Formularios DDS</h1>
+    <button id="btn-nuevo" class="btn btn-primary">
+      <span>➕</span> Nuevo Formulario
+    </button>
+  </div>
+
+  <!-- Formulario de Búsqueda -->
+  <form id="search-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.3); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+    <div class="form-group" style="margin: 0;">
+      <label for="search-folio">Filtrar por Folio</label>
+      <input type="text" id="search-folio" class="input-control" placeholder="Ej: DDS-2026-000001">
+    </div>
+    <div class="form-group" style="margin: 0;">
+      <label for="search-nombre">Filtrar por Nombre del Cliente</label>
+      <input type="text" id="search-nombre" class="input-control" placeholder="Ej: Ana Lopez">
+    </div>
+    <div style="display: flex; align-items: flex-end;">
+      <button type="submit" class="btn btn-secondary" style="height: 42px; width: 100%;">Buscar</button>
+    </div>
+  </form>
+
+  <!-- Tabla de resultados -->
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--glass-border); color: var(--text-secondary);">
+          <th style="padding: 1rem;">Folio</th>
+          <th style="padding: 1rem;">Cliente / Documento</th>
+          <th style="padding: 1rem;">Estado</th>
+          <th style="padding: 1rem;">Clasificación Riesgo</th>
+          <th style="padding: 1rem; text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="resultados-body">
+        <tr>
+          <td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando formularios...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Cargar formularios al inicio
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarFormularios();
+  });
+
+  // Escuchar envío del buscador
+  const searchForm = document.getElementById('search-form');
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    cargarFormularios();
+  });
+
+  async function cargarFormularios() {
+    const folio = document.getElementById('search-folio').value.trim();
+    const nombre = document.getElementById('search-nombre').value.trim();
+    
+    let queryParams = [];
+    if (folio) queryParams.push(`folio=${encodeURIComponent(folio)}`);
+    if (nombre) queryParams.push(`nombre=${encodeURIComponent(nombre)}`);
+    
+    const queryString = queryParams.length ? `?${queryParams.join('&')}` : '';
+
+    try {
+      const response = await apiFetch(`/api/formularios${queryString}`);
+      const listado = await response.json();
+      
+      const tbody = document.getElementById('resultados-body');
+      tbody.innerHTML = '';
+
+      if (!listado || listado.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+              No se encontraron formularios.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      listado.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--glass-border)';
+        tr.style.transition = 'background-color 0.2s';
+        tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'rgba(255, 255, 255, 0.02)');
+        tr.addEventListener('mouseleave', () => tr.style.backgroundColor = 'transparent');
+
+        // Formatear Badge de Estado
+        const isGuardado = f.estado === 'GUARDADO';
+        const estadoBadge = isGuardado
+          ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">GUARDADO</span>`
+          : `<span style="background: rgba(99, 102, 241, 0.15); color: var(--text-primary); border: 1px solid rgba(99, 102, 241, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">BORRADOR</span>`;
+
+        // Formatear Riesgo
+        let riesgoBadge = '<span style="color: var(--text-secondary);">—</span>';
+        if (f.clasificacionRiesgo) {
+          const isBajo = f.clasificacionRiesgo === 'BAJO';
+          riesgoBadge = isBajo
+            ? `<span style="color: var(--color-success); font-weight: 600;">🟩 BAJO</span>`
+            : `<span style="color: var(--color-error); font-weight: 600;">🚨 NO ELEGIBLE / REFORZADA</span>`;
+        }
+
+        // Cliente nombre y doc
+        const clienteInfo = f.cliente
+          ? `<div style="font-weight: 500;">${f.cliente.nombre}</div>
+             <div style="font-size: 0.8rem; color: var(--text-secondary);">${f.cliente.tipoDocumento}: ${f.cliente.numDocumento}</div>`
+          : `<span style="color: var(--text-secondary); font-style: italic;">Sin registrar</span>`;
+
+        // Acciones
+        let accionesHtml = '';
+        if (f.estado === 'BORRADOR') {
+          accionesHtml = `<a href="/formularios/${f.id}/identificacion" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Editar</a>`;
+        } else {
+          accionesHtml = `
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <a href="/formularios/${f.id}/resumen" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Resumen</a>
+              <button onclick="descargarPDF('${f.id}')" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; background: linear-gradient(135deg, hsl(200, 70%, 50%), hsl(200, 70%, 60%)); box-shadow: none;">Descargar</button>
+            </div>
+          `;
+        }
+
+        tr.innerHTML = `
+          <td style="padding: 1rem; font-family: monospace; font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">${f.folio || 'BORRADOR'}</td>
+          <td style="padding: 1rem;">${clienteInfo}</td>
+          <td style="padding: 1rem;">${estadoBadge}</td>
+          <td style="padding: 1rem;">${riesgoBadge}</td>
+          <td style="padding: 1rem; text-align: right;">${accionesHtml}</td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      showAlert('Error al cargar la bandeja de formularios', 'error');
+    }
+  }
+
+  // Crear nuevo Formulario Borrador
+  const btnNuevo = document.getElementById('btn-nuevo');
+  btnNuevo.addEventListener('click', async () => {
+    try {
+      const response = await apiFetch('/api/formularios', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (response.status === 201) {
+        window.location.href = `/formularios/${data.id}/identificacion`;
+      } else {
+        showAlert('No se pudo crear el formulario borrador', 'error');
+      }
+    } catch (err) {
+      showAlert('Error de conexión al crear formulario', 'error');
+    }
+  });
+
+  // Helper para descargar PDF directamente de forma asíncrona
+  async function descargarPDF(id) {
+    showAlert('Iniciando generación de PDF...', 'warning');
+    try {
+      const response = await apiFetch(`/api/formularios/${id}/pdf`);
+      const { jobId } = await response.json();
+
+      // Iniciar polling
+      const pollInterval = setInterval(async () => {
+        const pollRes = await apiFetch(`/api/formularios/${id}/pdf/${jobId}`);
+        if (pollRes.status === 200) {
+          clearInterval(pollInterval);
+          const blob = await pollRes.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = `Formulario-${id}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          showAlert('PDF descargado con éxito', 'success');
+        } else if (pollRes.status === 500) {
+          clearInterval(pollInterval);
+          showAlert('Error en la generación del PDF', 'error');
+        }
+      }, 500);
+    } catch (err) {
+      showAlert('Error al procesar la solicitud del PDF', 'error');
+    }
+  }
+</script>
+
+<%- include('layout_footer') %>
