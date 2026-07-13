@@ -32,18 +32,18 @@
 
       <div class="form-group">
         <label for="tipoCliente">Tipo de Cliente</label>
-        <select id="tipoCliente" class="input-control" required style="background-color: rgb(15 23 42);">
+        <select id="tipoCliente" class="input-control" required>
           <option value="NATURAL">Persona Natural</option>
-          <option value="JURIDICA">Persona Jurídica</option>
+          <option value="JURIDICA">Persona Juridica</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="tipoDocumento">Tipo de Documento</label>
-        <select id="tipoDocumento" class="input-control" required style="background-color: rgb(15 23 42);">
-          <option value="CEDULA">Cédula de Identidad</option>
+        <select id="tipoDocumento" class="input-control" required>
+          <option value="CEDULA">Cedula de Identidad</option>
           <option value="PASAPORTE">Pasaporte</option>
-          <option value="RUC">RUC (Registro Único de Contribuyente)</option>
+          <option value="RUC">RUC (Registro Unico de Contribuyente)</option>
         </select>
       </div>
 
@@ -66,19 +66,19 @@
       </div>
     </div>
 
-    <div class="form-group checkbox-group" style="background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border);">
+    <div class="form-group checkbox-group" style="background: var(--surface-alt); padding: 1rem 1.15rem; border-radius: 2px; border: 1px solid var(--rule); border-left: 3px solid var(--accent);">
       <input type="checkbox" id="esPEP" class="checkbox-control">
       <div>
-        <label for="esPEP" style="margin: 0; cursor: pointer; color: var(--text-primary);">El cliente es una Persona Expuesta Políticamente (PEP)</label>
-        <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">
-          De acuerdo a la Ley 23, los PEPs requieren debida diligencia reforzada y no son elegibles para trámites DDS.
+        <label for="esPEP" style="margin: 0; cursor: pointer; color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 0.9rem; font-weight: 600;">El cliente es una Persona Expuesta Politicamente (PEP)</label>
+        <p style="margin: 0.3rem 0 0 0; font-size: 0.78rem; color: var(--ink-muted);">
+          De acuerdo a la Ley 23, los PEPs requieren debida diligencia reforzada y no son elegibles para tramites DDS.
         </p>
       </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1.5rem;">
       <a href="/formularios" class="btn btn-secondary">Cancelar</a>
-      <button type="submit" class="btn btn-primary">Siguiente Paso ➡️</button>
+      <button type="submit" class="btn btn-primary">Siguiente paso</button>
     </div>
   </form>
 </div>

@@ -1,43 +1,44 @@
 <%- include('layout_header') %>
 
 <div class="glass-card">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h1 style="margin: 0;">Bandeja de Formularios DDS</h1>
+  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--rule);">
+    <div>
+      <span style="font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 0.5rem;">Bandeja principal</span>
+      <h1 style="margin: 0;">Formularios DDS</h1>
+    </div>
     <button id="btn-nuevo" class="btn btn-primary">
-      <span>➕</span> Nuevo Formulario
+      Nuevo formulario
     </button>
   </div>
 
-  <!-- Formulario de Búsqueda -->
-  <form id="search-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.3); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+  <form id="search-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; margin-bottom: 2rem; background: var(--surface-alt); padding: 1.5rem; border-radius: 2px; border: 1px solid var(--rule); border-left: 3px solid var(--accent);">
     <div class="form-group" style="margin: 0;">
-      <label for="search-folio">Filtrar por Folio</label>
-      <input type="text" id="search-folio" class="input-control" placeholder="Ej: DDS-2026-000001">
+      <label for="search-folio">Filtrar por folio</label>
+      <input type="text" id="search-folio" class="input-control" placeholder="DDS-2026-000001">
     </div>
     <div class="form-group" style="margin: 0;">
-      <label for="search-nombre">Filtrar por Nombre del Cliente</label>
-      <input type="text" id="search-nombre" class="input-control" placeholder="Ej: Ana Lopez">
+      <label for="search-nombre">Filtrar por nombre del cliente</label>
+      <input type="text" id="search-nombre" class="input-control" placeholder="Ana Lopez">
     </div>
     <div style="display: flex; align-items: flex-end;">
       <button type="submit" class="btn btn-secondary" style="height: 42px; width: 100%;">Buscar</button>
     </div>
   </form>
 
-  <!-- Tabla de resultados -->
   <div style="overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
       <thead>
-        <tr style="border-bottom: 2px solid var(--glass-border); color: var(--text-secondary);">
-          <th style="padding: 1rem;">Folio</th>
-          <th style="padding: 1rem;">Cliente / Documento</th>
-          <th style="padding: 1rem;">Estado</th>
-          <th style="padding: 1rem;">Clasificación Riesgo</th>
-          <th style="padding: 1rem; text-align: right;">Acciones</th>
+        <tr style="border-bottom: 2px solid var(--rule-strong); color: var(--ink-faint);">
+          <th style="padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Folio</th>
+          <th style="padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Cliente / Documento</th>
+          <th style="padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Estado</th>
+          <th style="padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Riesgo</th>
+          <th style="padding: 0.85rem 1rem; text-align: right; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Acciones</th>
         </tr>
       </thead>
       <tbody id="resultados-body">
         <tr>
-          <td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando formularios...</td>
+          <td colspan="5" style="padding: 2.5rem; text-align: center; color: var(--ink-faint); font-style: italic;">Cargando formularios...</td>
         </tr>
       </tbody>
     </table>
@@ -87,53 +88,49 @@
 
       listado.forEach(f => {
         const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid var(--glass-border)';
-        tr.style.transition = 'background-color 0.2s';
-        tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'rgba(255, 255, 255, 0.02)');
+        tr.style.borderBottom = '1px solid var(--rule)';
+        tr.style.transition = 'background-color 0.15s ease';
+        tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'var(--surface-alt)');
         tr.addEventListener('mouseleave', () => tr.style.backgroundColor = 'transparent');
 
-        // Formatear Badge de Estado
         const isGuardado = f.estado === 'GUARDADO';
         const estadoBadge = isGuardado
-          ? `<span style="background: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">GUARDADO</span>`
-          : `<span style="background: rgba(99, 102, 241, 0.15); color: var(--text-primary); border: 1px solid rgba(99, 102, 241, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">BORRADOR</span>`;
+          ? `<span style="background: var(--success-soft); color: var(--success); border: 1px solid var(--success); padding: 0.25rem 0.55rem; border-radius: 2px; font-size: 0.68rem; font-weight: 600; font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;">Guardado</span>`
+          : `<span style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); padding: 0.25rem 0.55rem; border-radius: 2px; font-size: 0.68rem; font-weight: 600; font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;">Borrador</span>`;
 
-        // Formatear Riesgo
-        let riesgoBadge = '<span style="color: var(--text-secondary);">—</span>';
+        let riesgoBadge = '<span style="color: var(--ink-faint); font-family: var(--font-mono); font-size: 0.78rem;">&mdash;</span>';
         if (f.clasificacionRiesgo) {
           const isBajo = f.clasificacionRiesgo === 'BAJO';
           riesgoBadge = isBajo
-            ? `<span style="color: var(--color-success); font-weight: 600;">🟩 BAJO</span>`
-            : `<span style="color: var(--color-error); font-weight: 600;">🚨 NO ELEGIBLE / REFORZADA</span>`;
+            ? `<span style="color: var(--success); font-weight: 600; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;">Bajo</span>`
+            : `<span style="color: var(--error); font-weight: 600; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;">No elegible</span>`;
         }
 
-        // Cliente nombre y doc
         const clienteInfo = f.cliente
-          ? `<div style="font-weight: 500;">${f.cliente.nombre}</div>
-             <div style="font-size: 0.8rem; color: var(--text-secondary);">${f.cliente.tipoDocumento}: ${f.cliente.numDocumento}</div>`
-          : `<span style="color: var(--text-secondary); font-style: italic;">Sin registrar</span>`;
+          ? `<div style="font-weight: 600; color: var(--ink);">${f.cliente.nombre}</div>
+             <div style="font-size: 0.76rem; color: var(--ink-faint); font-family: var(--font-mono); margin-top: 0.15rem;">${f.cliente.tipoDocumento} · ${f.cliente.numDocumento}</div>`
+          : `<span style="color: var(--ink-faint); font-style: italic;">Sin registrar</span>`;
 
-        // Acciones
         let accionesHtml = '';
         if (f.estado === 'BORRADOR') {
-          accionesHtml = `<a href="/formularios/${f.id}/identificacion" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Editar</a>`;
+          accionesHtml = `<a href="/formularios/${f.id}/identificacion" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Editar</a>`;
         } else {
           accionesHtml = `
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <a href="/formularios/${f.id}/resumen" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Resumen</a>
-              <button onclick="descargarPDF('${f.id}')" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; background: linear-gradient(135deg, hsl(200, 70%, 50%), hsl(200, 70%, 60%)); box-shadow: none;">Descargar</button>
+              <a href="/formularios/${f.id}/resumen" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Resumen</a>
+              <button onclick="descargarPDF('${f.id}')" class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;">Descargar</button>
             </div>
           `;
         }
 
         tr.innerHTML = `
-          <td style="padding: 1rem; font-family: monospace; font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">${f.folio || 'BORRADOR'}</td>
+          <td style="padding: 1rem; font-family: var(--font-mono); font-weight: 500; font-size: 0.82rem; color: var(--ink); letter-spacing: 0.04em;">${f.folio || 'BORRADOR'}</td>
           <td style="padding: 1rem;">${clienteInfo}</td>
           <td style="padding: 1rem;">${estadoBadge}</td>
           <td style="padding: 1rem;">${riesgoBadge}</td>
           <td style="padding: 1rem; text-align: right;">${accionesHtml}</td>
         `;
-        
+
         tbody.appendChild(tr);
       });
     } catch (err) {
