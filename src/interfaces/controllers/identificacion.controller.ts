@@ -76,12 +76,12 @@ export async function putIdentificacion(req: Request, res: Response): Promise<vo
     esPep: data.esPEP,
   });
 
-  // SPEC-SEC-04: auditoría obligatoria; usuarioId null hasta Sesión 6
+  // SPEC-SEC-04: auditoría obligatoria
   await auditoriaRepo.registrarEvento({
     accion: 'MODIFICAR',
     entidad: 'cliente',
     entidadId: cliente.id,
-    usuarioId: null,
+    usuarioId: req.usuario?.id || null,
     detalle: { tipoDocumento: data.tipoDocumento, formularioId: req.params.id },
   });
 

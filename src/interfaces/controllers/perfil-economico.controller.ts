@@ -67,12 +67,12 @@ export async function putPerfilEconomico(req: Request, res: Response): Promise<v
     data: { clasificacionRiesgo: clasificacion },
   });
 
-  // SPEC-SEC-04: auditoría obligatoria; usuarioId null hasta Sesión 6
+  // SPEC-SEC-04: auditoría obligatoria
   await auditoriaRepo.registrarEvento({
     accion: 'CLASIFICAR',
     entidad: 'perfil_economico',
     entidadId: perfil.id,
-    usuarioId: null,
+    usuarioId: req.usuario?.id || null,
     detalle: { clasificacionRiesgo: clasificacion, formularioId: req.params.id },
   });
 

@@ -1,11 +1,10 @@
-// POST /api/formularios/:id/guardar (RF-07, RF-08, RN-03, RN-04, SPEC-API-07 parcial)
-// Pasos implementados: 1 (campos completos), 2 (documento identidad verificado), 4 (folio), 5 (estado)
-// Paso 3 (PEP, RN-02, SPEC-RN-05) diferido a Sesion 6 — no implementado aquí
+// POST /api/formularios/:id/guardar (RF-07, RF-08, RN-03, RN-04, SPEC-API-07)
 import { Request, Response } from 'express';
 import { DocumentoRepository } from '../../infrastructure/repositories/documento.repository';
 import { AuditoriaRepository } from '../../infrastructure/repositories/auditoria.repository';
 import { FolioService } from '../../infrastructure/services/folio.service';
 import { prisma } from '../../infrastructure/prisma-client';
+import { puedeGuardarseComoDDS } from '../../domain/clasificacion';
 
 const documentoRepo = new DocumentoRepository(prisma);
 const auditoriaRepo = new AuditoriaRepository(prisma);
@@ -60,25 +59,38 @@ export async function postGuardar(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  // Paso 3 (RN-02, SPEC-RN-05, CA-04): verificación PEP diferida a Sesión 6
+    // Paso 3 (RN-02, SPEC-RN-05, CA-04): Cliente NO es PEP
+    if (!puedeGuardarseComoDDS({
+      ingresoMensual: Number(perfilEconomico!.ingresoMensual),
+      volumenMensual: Number(perfilEconomico!.volumenTransacciones),
+      esPEP: cliente!.esPep
+    })) {
+      res.status(409).json({
+        error: {
+          codigo: 'PEP_NO_ELEGIBLE',
+          mensaje: 'Cliente PEP: requiere Diligencia Reforzada (Art. 26)'
+        }
+      });
+      return;
+    }
 
-  // Paso 4 (SPEC-RN-03, SPEC-DATA-01, DEF003): folio único
-  const folio = await folioService.generar();
+    // Paso 4 (SPEC-RN-03, SPEC-DATA-01, DEF003): folio único
+    const folio = await folioService.generar();
 
-  // Paso 5: estado -> GUARDADO
-  await prisma.formularioDDS.update({
-    where: { id: formularioId },
-    data: { folio, estado: 'GUARDADO' },
-  });
+    // Paso 5: estado -> GUARDADO
+    await prisma.formularioDDS.update({
+      where: { id: formularioId },
+      data: { folio, estado: 'GUARDADO' },
+    });
 
-  // SPEC-SEC-04: auditoría obligatoria
-  await auditoriaRepo.registrarEvento({
-    accion: 'GUARDAR',
-    entidad: 'formulario_dds',
-    entidadId: formularioId,
-    usuarioId: null,
-    detalle: { folio },
-  });
+    // SPEC-SEC-04: auditoría obligatoria
+    await auditoriaRepo.registrarEvento({
+      accion: 'GUARDAR',
+      entidad: 'formulario_dds',
+      entidadId: formularioId,
+      usuarioId: req.usuario?.id || null,
+      detalle: { folio },
+    });
 
-  res.status(200).json({ folio, estado: 'GUARDADO' });
-}
+    res.status(200).json({ folio, estado: 'GUARDADO' });
+  }
